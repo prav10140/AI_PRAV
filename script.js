@@ -1,4 +1,4 @@
-// Firebase configuration - using global firebase from CDN
+
 const firebaseConfig = {
   apiKey: "AIzaSyAXLFrgXRvgyAjXWI0e9eiCAtEw50xSLHs",
   authDomain: "loginform-5eb02.firebaseapp.com",
@@ -8,8 +8,6 @@ const firebaseConfig = {
   appId: "1:499608178000:web:21ffbf36c22deb45f53055",
   databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com/",
 }
-
-// Initialize Firebase using global firebase object from CDN
 const firebase = window.firebase
 firebase.initializeApp(firebaseConfig)
 const auth = firebase.auth()
@@ -198,16 +196,15 @@ const getAIResponse = async (question) => {
   return getEducationalResponse(question)
 }
 
-// ENHANCED UTILITY FUNCTIONS WITH FORCE DISPLAY
+
 const showElement = (id) => {
   const element = document.getElementById(id)
   if (element) {
-    // Force display by removing inline style and setting via style property
+
     element.style.removeProperty("display")
     element.style.display = "block"
     element.style.visibility = "visible"
 
-    // Also remove any hidden classes
     element.classList.remove("hidden")
 
     console.log(`Showing element: ${id} - Current display: ${element.style.display}`)
@@ -244,26 +241,21 @@ const hideError = () => {
   }
 }
 
-// ENHANCED NAVIGATION FUNCTIONS WITH FORCE DISPLAY
 const showDashboard = () => {
   console.log("=== SHOWING DASHBOARD ===")
 
-  // Hide other elements first
   hideElement("loading-screen")
   hideElement("auth-container")
 
-  // Force show dashboard with multiple methods
   const dashboard = document.getElementById("dashboard")
   if (dashboard) {
-    // Remove any inline display none
+
     dashboard.removeAttribute("style")
 
-    // Set display via multiple methods
     dashboard.style.display = "block"
     dashboard.style.visibility = "visible"
     dashboard.style.opacity = "1"
 
-    // Remove hidden classes
     dashboard.classList.remove("hidden")
     dashboard.classList.add("visible")
 
@@ -272,10 +264,8 @@ const showDashboard = () => {
     console.log("Dashboard computed display:", window.getComputedStyle(dashboard).display)
     console.log("Dashboard visibility:", dashboard.style.visibility)
 
-    // Force a reflow
     dashboard.offsetHeight
 
-    // Double check after a small delay
     setTimeout(() => {
       console.log("Dashboard check after 100ms:")
       console.log("Display:", window.getComputedStyle(dashboard).display)
@@ -346,7 +336,7 @@ const switchToLogin = () => {
   document.getElementById("auth-button-text").textContent = "Sign In"
   document.querySelector("#auth-submit i").className = "fas fa-sign-in-alt mr-2"
 
-  // Hide confirm password field
+
   const confirmGroup = document.getElementById("confirm-group")
   if (confirmGroup) {
     confirmGroup.style.display = "none"
@@ -364,7 +354,6 @@ const switchToRegister = () => {
   document.getElementById("auth-button-text").textContent = "Create Account"
   document.querySelector("#auth-submit i").className = "fas fa-user-plus mr-2"
 
-  // Show confirm password field
   const confirmGroup = document.getElementById("confirm-group")
   if (confirmGroup) {
     confirmGroup.style.display = "block"
@@ -404,14 +393,12 @@ async function handleAuth(e) {
       })
     }
 
-    // Clear form
     document.getElementById("email").value = ""
     document.getElementById("password").value = ""
     if (document.getElementById("confirm-password")) {
       document.getElementById("confirm-password").value = ""
     }
 
-    // Force show dashboard immediately after successful auth
     setTimeout(() => {
       console.log("Force showing dashboard after auth success")
       showDashboard()
@@ -427,12 +414,10 @@ async function handleAuth(e) {
   }`
 }
 
-// Google Authentication Setup - FIXED FOR POPUP METHOD
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 googleProvider.addScope("email")
 googleProvider.addScope("profile")
 
-// Reset Google button state
 const resetGoogleButton = () => {
   const btn = document.getElementById("googleSignInBtn")
   if (btn) {
@@ -441,7 +426,6 @@ const resetGoogleButton = () => {
   }
 }
 
-// FIXED: Handle Google Sign-In with POPUP instead of REDIRECT
 const handleGoogleSignIn = async () => {
   const btn = document.getElementById("googleSignInBtn")
   if (!btn) return
@@ -453,13 +437,11 @@ const handleGoogleSignIn = async () => {
   try {
     console.log("Starting Google sign-in with popup...")
 
-    // Use signInWithPopup instead of signInWithRedirect
     const result = await auth.signInWithPopup(googleProvider)
     const user = result.user
 
     console.log("Google sign-in successful:", user.email)
 
-    // Check if user exists in database, if not create entry
     const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
     if (!userSnapshot.exists()) {
       console.log("Creating new user in database...")
@@ -475,12 +457,10 @@ const handleGoogleSignIn = async () => {
       })
     }
 
-    // Success message
     console.log("Google authentication completed successfully")
   } catch (err) {
     console.error("Google sign-in error:", err)
 
-    // Handle specific error cases
     if (err.code === "auth/popup-closed-by-user") {
       showError("Sign-in was cancelled. Please try again.")
     } else if (err.code === "auth/popup-blocked") {
@@ -495,7 +475,7 @@ const handleGoogleSignIn = async () => {
   }
 }
 
-// REMOVED: handleRedirectResult function since we're using popup now
+
 
 async function logout() {
   try {
@@ -672,7 +652,7 @@ const loadLeaderboard = () => {
   })
 }
 
-// ENHANCED AUTH STATE LISTENER WITH FORCE DISPLAY
+
 const setupAuthStateListener = () => {
   auth.onAuthStateChanged((user) => {
     console.log("=== AUTH STATE CHANGED ===")
@@ -681,19 +661,17 @@ const setupAuthStateListener = () => {
     if (user) {
       currentUser = user
 
-      // Update user email in UI
       const userEmailElement = document.getElementById("user-email")
       if (userEmailElement) {
         userEmailElement.textContent = user.email
         console.log("Updated user email in UI:", user.email)
       }
 
-      // Force show dashboard with delay to ensure DOM is ready
       setTimeout(() => {
         console.log("Auth state: Forcing dashboard display")
         showDashboard()
 
-        // Load user data
+ 
         loadQuestionHistory()
         loadLeaderboard()
       }, 100)
@@ -706,11 +684,9 @@ const setupAuthStateListener = () => {
   })
 }
 
-// Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
   console.log("=== DOM LOADED - INITIALIZING APP ===")
 
-  // Check if all required elements exist
   const requiredElements = ["dashboard", "auth-container", "loading-screen"]
   requiredElements.forEach((id) => {
     const element = document.getElementById(id)
@@ -721,23 +697,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })
 
-  // Tab switching
   document.getElementById("login-tab").addEventListener("click", switchToLogin)
   document.getElementById("register-tab").addEventListener("click", switchToRegister)
 
-  // Form submission
   document.getElementById("auth-form").addEventListener("submit", handleAuth)
 
-  // Google sign-in
   document.getElementById("googleSignInBtn").addEventListener("click", handleGoogleSignIn)
 
-  // Logout
   document.getElementById("logout-btn").addEventListener("click", logout)
 
-  // Question form
   document.getElementById("question-form").addEventListener("submit", submitQuestion)
 
-  // Navigation
   document.querySelectorAll(".nav-button").forEach((btn) => {
     btn.addEventListener("click", () => {
       const tab = btn.getAttribute("data-tab")
@@ -745,15 +715,12 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   })
 
-  // Setup auth state listener - THIS IS CRUCIAL
   setupAuthStateListener()
 
-  // Initial load with timeout
   setTimeout(() => {
     console.log("=== INITIAL LOAD TIMEOUT ===")
     hideElement("loading-screen")
 
-    // Check if user is already authenticated
     if (auth.currentUser) {
       console.log("User already authenticated:", auth.currentUser.email)
       showDashboard()
