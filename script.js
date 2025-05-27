@@ -1,40 +1,43 @@
-// Firebase Configuration - Replace with your config
+// =========================
+// Firebase Configuration
+// =========================
 const firebaseConfig = {
   apiKey: "AIzaSyAXLFrgXRvgyAjXWI0e9eiCAtEw50xSLHs",
   authDomain: "loginform-5eb02.firebaseapp.com",
   projectId: "loginform-5eb02",
-  storageBucket: "loginform-5eb02.firebasestorage.app",  // ✅ Corrected
+  storageBucket: "loginform-5eb02.appspot.com",  // ✅ Correct Firebase URL
   messagingSenderId: "499608178000",
   appId: "1:499608178000:web:21ffbf36c22deb45f53055",
-  databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com/"
-}
+  databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com"
+};
 
-
-
-
+// =========================
 // Initialize Firebase
+// =========================
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
-// Global variables
+// =========================
+// Global Variables
+// =========================
 let currentUser = null;
 let isLogin = true;
 
-// Comprehensive Educational Knowledge Base
+// =========================
+// Get Wolfram Answer
+// =========================
 async function getWolframAnswer(question) {
   try {
     const res = await fetch(`https://my-app-two-flame-49.vercel.app/api/wolfram?query=${encodeURIComponent(question)}`);
     if (!res.ok) throw new Error("Proxy API request failed");
 
     const data = await res.json();
-    if (!data.queryresult?.success) {
-      return null;
-    }
+    if (!data.queryresult?.success) return null;
 
     const pods = data.queryresult.pods;
 
-    // Find the first subpod with a plaintext and image
+    // Return the first meaningful answer with image
     for (const pod of pods) {
       for (const sub of pod.subpods) {
         if (sub.plaintext && sub.img?.src) {
@@ -47,31 +50,31 @@ async function getWolframAnswer(question) {
       }
     }
 
-    // Fallback if no image
     return null;
-
   } catch (error) {
+    console.error("Wolfram API Error:", error);
     return null;
   }
 }
+
+// =========================
+// Get AI Response (ChatGPT-like)
+// =========================
 async function getAIResponse(question) {
   try {
     const response = await fetch(`/api/ai`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question }),
     });
 
     const data = await response.json();
     return data.answer;
   } catch (error) {
-    console.error("Error getting AI response:", error);
+    console.error("AI Response Error:", error);
     return "Sorry, I couldn't get an answer right now.";
   }
 }
-
 
 // Utility Functions
 const showElement = (id) => {
