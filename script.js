@@ -54,6 +54,23 @@ async function getWolframAnswer(question) {
     return null;
   }
 }
+async function getAIResponse(question) {
+  try {
+    const response = await fetch(`/api/ai`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ question }),
+    });
+
+    const data = await response.json();
+    return data.answer;
+  } catch (error) {
+    console.error("Error getting AI response:", error);
+    return "Sorry, I couldn't get an answer right now.";
+  }
+}
 
 
 // Utility Functions
