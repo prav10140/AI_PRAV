@@ -198,24 +198,52 @@ const getAIResponse = async (question) => {
   return getEducationalResponse(question)
 }
 
-// Utility Functions
+// Utility Functions - IMPROVED WITH BETTER DISPLAY HANDLING
 const showElement = (id) => {
-  document.getElementById(id).style.display = "block"
+  const element = document.getElementById(id)
+  if (element) {
+    element.style.display = "block"
+    console.log(`Showing element: ${id}`)
+  }
 }
 
 const hideElement = (id) => {
-  document.getElementById(id).style.display = "none"
+  const element = document.getElementById(id)
+  if (element) {
+    element.style.display = "none"
+    console.log(`Hiding element: ${id}`)
+  }
 }
 
 const showError = (message) => {
   const errorDiv = document.getElementById("error-message")
   const errorText = document.getElementById("error-text")
-  errorText.textContent = message
-  errorDiv.style.display = "flex"
+  if (errorDiv && errorText) {
+    errorText.textContent = message
+    errorDiv.style.display = "flex"
+  }
 }
 
 const hideError = () => {
-  document.getElementById("error-message").style.display = "none"
+  const errorDiv = document.getElementById("error-message")
+  if (errorDiv) {
+    errorDiv.style.display = "none"
+  }
+}
+
+// IMPROVED NAVIGATION FUNCTIONS
+const showDashboard = () => {
+  console.log("Showing dashboard...")
+  hideElement("loading-screen")
+  hideElement("auth-container")
+  showElement("dashboard")
+}
+
+const showAuthContainer = () => {
+  console.log("Showing auth container...")
+  hideElement("loading-screen")
+  hideElement("dashboard")
+  showElement("auth-container")
 }
 
 const formatDate = (timestamp) => {
@@ -310,26 +338,36 @@ async function handleAuth(e) {
 
   try {
     if (isLogin) {
-      await auth.signInWithEmailAndPassword(email, password)
+      const userCredential = await auth.signInWithEmailAndPassword(email, password)
+      console.log("Email sign-in successful:", userCredential.user.email)
     } else {
       const { user } = await auth.createUserWithEmailAndPassword(email, password)
+      console.log("Account created for:", user.email)
       await database.ref(`users/${user.uid}`).set({
         email: user.email,
         questionsAsked: 0,
         lastActive: Date.now(),
       })
     }
-    hideElement("auth-container")
+
+    // Clear form
+    document.getElementById("email").value = ""
+    document.getElementById("password").value = ""
+    if (document.getElementById("confirm-password")) {
+      document.getElementById("confirm-password").value = ""
+    }
   } catch (err) {
+    console.error("Auth error:", err)
     showError(err.message)
-    btn.disabled = false
-    btn.innerHTML = `<i class="fas ${isLogin ? "fa-sign-in-alt" : "fa-user-plus"} mr-2"></i>${
-      isLogin ? "Sign In" : "Create Account"
-    }`
   }
+
+  btn.disabled = false
+  btn.innerHTML = `<i class="fas ${isLogin ? "fa-sign-in-alt" : "fa-user-plus"} mr-2"></i>${
+    isLogin ? "Sign In" : "Create Account"
+  }`
 }
 
-// Google Authentication Setup - IMPROVED VERSION TO HANDLE CORS ISSUES
+// Google Authentication Setup
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 googleProvider.addScope("email")
 googleProvider.addScope("profile")
@@ -343,7 +381,7 @@ const resetGoogleButton = () => {
   }
 }
 
-// Handle Google Sign-In with improved CORS handling
+// Handle Google Sign-In
 const handleGoogleSignIn = async () => {
   const btn = document.getElementById("googleSignInBtn")
   if (!btn) return
@@ -353,50 +391,39 @@ const handleGoogleSignIn = async () => {
   hideError()
 
   try {
-    // Use redirect method to avoid CORS popup issues
+    console.log("Starting Google sign-in...")
     await auth.signInWithRedirect(googleProvider)
   } catch (err) {
     console.error("Google sign-in error:", err)
-
-    // Handle specific error cases
-    if (err.code === "auth/popup-blocked") {
-      showError("Popup was blocked. Please allow popups for this site and try again.")
-    } else if (err.code === "auth/cancelled-popup-request") {
-      // User cancelled, just reset button
-    } else if (err.code === "auth/network-request-failed") {
-      showError("Network error. Please check your connection and try again.")
-    } else {
-      showError("Google sign-in failed: " + (err.message || "Unknown error"))
-    }
-
+    showError("Google sign-in failed: " + (err.message || "Unknown error"))
     resetGoogleButton()
   }
 }
 
-// Handle redirect result on page load - IMPROVED VERSION
+// Handle redirect result on page load
 const handleRedirectResult = async () => {
   try {
+    console.log("Checking for redirect result...")
     const result = await auth.getRedirectResult()
     if (result && result.user) {
+      console.log("Google sign-in redirect successful:", result.user.email)
       const user = result.user
 
       // Check if user exists in database, if not create entry
       const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
       if (!userSnapshot.exists()) {
+        console.log("Creating new user in database...")
         await database.ref(`users/${user.uid}`).set({
           email: user.email,
           questionsAsked: 0,
           lastActive: Date.now(),
         })
       } else {
-        // Update last active time
+        console.log("Updating existing user...")
         await database.ref(`users/${user.uid}`).update({
           lastActive: Date.now(),
         })
       }
-
-      hideElement("auth-container")
-      console.log("Google sign-in successful!")
     }
   } catch (err) {
     console.error("Google redirect result error:", err)
@@ -409,8 +436,8 @@ const handleRedirectResult = async () => {
 
 async function logout() {
   try {
+    console.log("Logging out...")
     await auth.signOut()
-    showElement("auth-container")
   } catch (err) {
     console.error("Error signing out:", err)
   }
@@ -582,8 +609,41 @@ const loadLeaderboard = () => {
   })
 }
 
+// IMPROVED AUTH STATE LISTENER - THIS IS THE KEY FIX
+const setupAuthStateListener = () => {
+  auth.onAuthStateChanged((user) => {
+    console.log("Auth state changed:", user ? `User: ${user.email}` : "No user")
+
+    if (user) {
+      currentUser = user
+
+      // Update user email in UI
+      const userEmailElement = document.getElementById("user-email")
+      if (userEmailElement) {
+        userEmailElement.textContent = user.email
+      }
+
+      // Show dashboard and hide auth
+      showDashboard()
+
+      // Load user data
+      loadQuestionHistory()
+      loadLeaderboard()
+
+      console.log("Dashboard should now be visible")
+    } else {
+      currentUser = null
+      showAuthContainer()
+      resetGoogleButton()
+      console.log("Auth container should now be visible")
+    }
+  })
+}
+
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM loaded, initializing app...")
+
   // Tab switching
   document.getElementById("login-tab").addEventListener("click", switchToLogin)
   document.getElementById("register-tab").addEventListener("click", switchToRegister)
@@ -611,30 +671,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle redirect result on page load
   handleRedirectResult()
 
-  // Auth state observer
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      currentUser = user
-      document.getElementById("user-email").textContent = user.email
-      hideElement("loading-screen")
-      hideElement("auth-container")
-      showElement("dashboard")
-      loadQuestionHistory()
-      loadLeaderboard()
-    } else {
-      currentUser = null
-      hideElement("loading-screen")
-      hideElement("dashboard")
-      showElement("auth-container")
-      resetGoogleButton()
-    }
-  })
+  // Setup auth state listener - THIS IS CRUCIAL
+  setupAuthStateListener()
 
-  // Initial load
+  // Initial load with timeout
   setTimeout(() => {
+    console.log("Initial load timeout reached")
     hideElement("loading-screen")
-    if (!currentUser) {
-      showElement("auth-container")
+
+    // Check if user is already authenticated
+    if (auth.currentUser) {
+      console.log("User already authenticated:", auth.currentUser.email)
+      showDashboard()
+    } else {
+      console.log("No authenticated user, showing auth")
+      showAuthContainer()
     }
   }, 2000)
 })
