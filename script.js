@@ -1,8 +1,4 @@
-import * as math from "mathjs"
-import firebase from "firebase/app"
-import "firebase/auth"
-import "firebase/database"
-
+// Firebase configuration - using global firebase from CDN
 const firebaseConfig = {
   apiKey: "AIzaSyAXLFrgXRvgyAjXWI0e9eiCAtEw50xSLHs",
   authDomain: "loginform-5eb02.firebaseapp.com",
@@ -13,6 +9,8 @@ const firebaseConfig = {
   databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com/",
 }
 
+// Initialize Firebase using global firebase object from CDN
+const firebase = window.firebase
 firebase.initializeApp(firebaseConfig)
 const auth = firebase.auth()
 const database = firebase.database()
@@ -183,6 +181,8 @@ async function getWolframAnswer(question) {
 const getAIResponse = async (question) => {
   if (isMathExpression(question)) {
     try {
+      // Using global math object from CDN
+      const math = window.math
       const result = math.evaluate(question)
       return `<div class="math-answer">Answer: <strong>${result}</strong></div>`
     } catch (err) {
@@ -327,7 +327,7 @@ async function handleAuth(e) {
   }
 }
 
-// Google Authentication Setup - FIXED VERSION
+// Google Authentication Setup - using global firebase object
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 googleProvider.addScope("email")
 googleProvider.addScope("profile")
@@ -658,4 +658,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 2000)
 })
-
