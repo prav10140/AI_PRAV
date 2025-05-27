@@ -96,7 +96,7 @@ const getEducationalResponse = (question) => {
   }
 
   // Default comprehensive response
-  return `Thank you for your question about "${question}". Here's some educational guidance:
+  return `Thanks for your beautiful confusion "${question}". Here's some educational guidance:
 
 📚 **Study Strategies:**
 • Break complex topics into smaller, manageable parts
