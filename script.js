@@ -139,7 +139,7 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 // AI Response Function
 const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
 
-// Call your separately hosted Vercel backend to query Wolfram Alpha
+// Call your hosted Vercel backend API
 async function getWolframAnswer(question) {
   try {
     const res = await fetch(`https://my-app-two-flame-49.vercel.app/api/wolfram?query=${encodeURIComponent(question)}`);
@@ -147,13 +147,13 @@ async function getWolframAnswer(question) {
 
     const data = await res.json();
     if (!data.queryresult?.success) {
-      return null; // no result from Wolfram
+      return null;
     }
 
     const pods = data.queryresult.pods;
 
-    // Find pod with title containing "Result" or fallback to first pod with plaintext
-    let answerPod = pods.find(p =>
+    // Find pod with plaintext and "result" in title, or fallback to any pod with plaintext
+    let answerPod = pods.find(p => 
       p.title.toLowerCase().includes("result") && p.subpods[0].plaintext.trim() !== ""
     );
     if (!answerPod) {
@@ -165,14 +165,12 @@ async function getWolframAnswer(question) {
     }
 
     return `🧮 Wolfram Alpha Answer: ${answerPod.subpods[0].plaintext}`;
-
   } catch (error) {
     return null;
   }
 }
 
 const getAIResponse = async (question) => {
-  // If simple math expression, evaluate locally
   if (isMathExpression(question)) {
     try {
       const result = math.evaluate(question);
@@ -184,7 +182,6 @@ const getAIResponse = async (question) => {
     }
   }
 
-  // Fallback to Wolfram for general questions
   const wolframAnswer = await getWolframAnswer(question);
   if (wolframAnswer) return wolframAnswer;
 
