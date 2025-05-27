@@ -268,118 +268,114 @@ const getRankClass = (index) => {
     return "rank-default";
 };
 
-// Authentication Functions
 // ——————————————————————————————
 // State
 // ——————————————————————————————
 let isLogin = true;
 
 // ——————————————————————————————
-// Tabs: Login / Register
+// Tab Switching
 // ——————————————————————————————
 const loginTab = document.getElementById('login-tab');
 const registerTab = document.getElementById('register-tab');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
+const confirmGroup = document.getElementById('confirm-group');
+const authButtonText = document.getElementById('auth-button-text');
+const authIcon = document.querySelector('#auth-submit i');
 
 loginTab.addEventListener('click', () => {
   isLogin = true;
   loginTab.classList.add('active');
   registerTab.classList.remove('active');
-  loginForm.style.display = 'block';
-  registerForm.style.display = 'none';
-  hideError('login');
+  confirmGroup.style.display = 'none';
+  document.getElementById('password').placeholder = 'Enter your password';
+  authButtonText.textContent = 'Sign In';
+  authIcon.className = 'fas fa-sign-in-alt mr-2';
+  hideError();
 });
 
 registerTab.addEventListener('click', () => {
   isLogin = false;
   registerTab.classList.add('active');
   loginTab.classList.remove('active');
-  registerForm.style.display = 'block';
-  loginForm.style.display = 'none';
-  hideError('register');
+  confirmGroup.style.display = 'block';
+  document.getElementById('password').placeholder = 'Create a password';
+  authButtonText.textContent = 'Create Account';
+  authIcon.className = 'fas fa-user-plus mr-2';
+  hideError();
 });
 
 // ——————————————————————————————
 // Error Helpers
 // ——————————————————————————————
-function showError(formType, message) {
-  const div = document.getElementById(`${formType}-error-message`);
-  const span = document.getElementById(`${formType}-error-text`);
-  span.textContent = message;
-  div.style.display = 'flex';
+function showError(message) {
+  const errorDiv = document.getElementById('error-message');
+  const errorText = document.getElementById('error-text');
+  errorText.textContent = message;
+  errorDiv.style.display = 'flex';
 }
 
-function hideError(formType) {
-  document.getElementById(`${formType}-error-message`).style.display = 'none';
+function hideError() {
+  document.getElementById('error-message').style.display = 'none';
 }
 
 // ——————————————————————————————
-// HANDLE LOGIN
+// Handle Form Submit (Login or Register)
 // ——————————————————————————————
-loginForm.addEventListener('submit', async e => {
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  hideError('login');
+  hideError();
 
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const btn = document.getElementById('login-submit');
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('confirm-password').value;
+  const btn = document.getElementById('auth-submit');
 
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...`;
-
-  try {
-    await auth.signInWithEmailAndPassword(email, password);
-    document.getElementById('auth-container').style.display = 'none';
-  } catch (err) {
-    showError('login', err.message);
-    btn.disabled = false;
-    btn.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i>Sign In`;
-  }
-});
-
-// ——————————————————————————————
-// HANDLE REGISTER
-// ——————————————————————————————
-registerForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  hideError('register');
-
-  const email = document.getElementById('register-email').value.trim();
-  const password = document.getElementById('register-password').value;
-  const confirm = document.getElementById('register-confirm-password').value;
-  const btn = document.getElementById('register-submit');
-
-  if (password !== confirm) {
-    showError('register', "Passwords don't match");
+  // If registering, ensure passwords match
+  if (!isLogin && password !== confirm) {
+    showError("Passwords don't match");
     return;
   }
 
   btn.disabled = true;
-  btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Creating account...`;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${isLogin ? 'Signing in...' : 'Creating account...'}`;
 
   try {
-    const { user } = await auth.createUserWithEmailAndPassword(email, password);
-    await database.ref(`users/${user.uid}`).set({
-      email: user.email,
-      questionsAsked: 0,
-      lastActive: Date.now(),
-    });
+    if (isLogin) {
+      // LOGIN
+      await auth.signInWithEmailAndPassword(email, password);
+    } else {
+      // REGISTER
+      const { user } = await auth.createUserWithEmailAndPassword(email, password);
+      // Initialize in Realtime DB
+      await database.ref(`users/${user.uid}`).set({
+        email: user.email,
+        questionsAsked: 0,
+        lastActive: Date.now(),
+      });
+    }
+    // Success: hide modal
     document.getElementById('auth-container').style.display = 'none';
+
   } catch (err) {
-    showError('register', err.message);
+    showError(err.message);
     btn.disabled = false;
-    btn.innerHTML = `<i class="fas fa-user-plus mr-2"></i>Register`;
+    // Restore button text & icon
+    if (isLogin) {
+      btn.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i>Sign In`;
+    } else {
+      btn.innerHTML = `<i class="fas fa-user-plus mr-2"></i>Create Account`;
+    }
   }
 });
 
 // ——————————————————————————————
-// GOOGLE SIGN‑IN
+// Google Sign‑In
 // ——————————————————————————————
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
   try {
     const { user } = await auth.signInWithPopup(googleProvider);
+    // Initialize new Google users
     const snap = await database.ref(`users/${user.uid}`).once('value');
     if (!snap.exists()) {
       await database.ref(`users/${user.uid}`).set({
@@ -390,21 +386,9 @@ document.getElementById('googleSignInBtn').addEventListener('click', async () =>
     }
     document.getElementById('auth-container').style.display = 'none';
   } catch (err) {
-    alert('Google Sign‑in failed: ' + err.message);
+    showError('Google sign-in failed: ' + err.message);
   }
 });
-
-// ——————————————————————————————
-// LOGOUT
-// ——————————————————————————————
-async function logout() {
-  try {
-    await auth.signOut();
-    document.getElementById('auth-container').style.display = 'flex';
-  } catch (err) {
-    console.error('Sign‑out error:', err);
-  }
-}
 
 // Dashboard Functions
 const switchTab = (tabName) => {
