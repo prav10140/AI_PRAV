@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
+
         <div id="loading-screen" class="loading-container">
             <div class="loading-content">
                 <div class="spinner">
@@ -20,8 +20,7 @@
             </div>
         </div>
 
-        <!-- Authentication Form -->
-        <!-- AUTH MODAL -->
+
 <div id="auth-container" class="auth-container" style="display: none;">
   <div class="auth-card">
     <div class="auth-header">
@@ -46,7 +45,7 @@
         <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
       </div>
 
-      <!-- Confirm Password (only shown when registering) -->
+
       <div class="form-group" id="confirm-group" style="display: none;">
         <label for="confirm-password">Confirm Password</label>
         <input type="password" id="confirm-password" placeholder="Confirm your password" autocomplete="new-password">
@@ -72,9 +71,8 @@
 </div>
 
 
-        <!-- Dashboard -->
         <div id="dashboard" class="dashboard" style="display: none;">
-            <!-- Header -->
+  
             <header class="dashboard-header">
                 <div class="header-content">
                     <div class="header-left">
@@ -94,7 +92,7 @@
                 </div>
             </header>
 
-            <!-- Mobile Navigation -->
+  
             <nav class="mobile-nav">
                 <button class="nav-button active" data-tab="ask">
                     <i class="fas fa-question-circle"></i>
@@ -110,10 +108,10 @@
                 </button>
             </nav>
 
-            <!-- Main Content -->
+ 
             <main class="dashboard-main">
                 <div class="dashboard-grid">
-                    <!-- Question Form Section -->
+ 
                     <div id="question-section" class="question-section active">
                         <div class="question-form-card">
                             <div class="card-header">
@@ -139,7 +137,6 @@
                         </div>
                     </div>
 
-                    <!-- History Section -->
                     <div id="history-section" class="history-section">
                         <div class="history-card">
                             <div class="card-header">
@@ -159,7 +156,7 @@
                         </div>
                     </div>
 
-                    <!-- Leaderboard Section -->
+
                     <div id="leaderboard-section" class="leaderboard-section">
                         <div class="leaderboard-card">
                             <div class="card-header">
@@ -185,14 +182,12 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-    
-    <!-- Main JavaScript -->
+
     <script src="script.js"></script>
 </body>
 </html>
