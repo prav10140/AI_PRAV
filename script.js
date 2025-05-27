@@ -5,7 +5,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyAXLFrgXRvgyAjXWI0e9eiCAtEw50xSLHs",
   authDomain: "loginform-5eb02.firebaseapp.com",
   projectId: "loginform-5eb02",
-  storageBucket: "loginform-5eb02.appspot.com",  // ✅ Correct Firebase URL
+  storageBucket: "http://loginform-5eb02.firebasestorage.app",  // ✅ Correct Firebase URL
   messagingSenderId: "499608178000",
   appId: "1:499608178000:web:21ffbf36c22deb45f53055",
   databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com"
