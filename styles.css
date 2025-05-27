@@ -1,4 +1,4 @@
-/* Reset and Base Styles */
+
 * {
   margin: 0;
   padding: 0;
@@ -13,7 +13,7 @@ body {
   background: #f8fafc;
 }
 
-/* Loading Screen */
+
 .loading-container {
   min-height: 100vh;
   display: flex;
@@ -71,7 +71,7 @@ html, body {
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
-  background: linear-gradient(to right, #74ebd5, #acb6e5) !important; /* A gradient look */
+  background: linear-gradient(to right, #74ebd5, #acb6e5) !important;
 
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -83,7 +83,7 @@ html, body {
 .auth-card {
   width: 100%;
   max-width: 400px;
-  margin: 0 1rem;       /* small side margin on mobile */
+  margin: 0 1rem;  
   background: white;
   border-radius: 1rem;
   box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1),
@@ -114,7 +114,7 @@ html, body {
 }
 
 
-/* Remove any leftover inline padding on #auth-container */
+
 #auth-container[style] {
   padding: 0 !important;
 }
@@ -216,7 +216,7 @@ html, body {
   cursor: not-allowed;
 }
 
-/* Dashboard Styles */
+
 .dashboard {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -331,7 +331,7 @@ html, body {
   display: block;
 }
 
-/* Question Form Styles */
+
 .question-form-card {
   background: white;
   border-radius: 1rem;
@@ -404,7 +404,7 @@ html, body {
   transform: none;
 }
 
-/* History Styles */
+
 .history-card {
   background: white;
   border-radius: 1rem;
@@ -508,7 +508,7 @@ html, body {
   border-top: 1px solid #f3f4f6;
 }
 
-/* Leaderboard Styles */
+
 .leaderboard-card {
   background: white;
   border-radius: 1rem;
@@ -643,7 +643,7 @@ html, body {
   background: #ea580c;
 }
 
-/* Utility Classes */
+
 .text-4xl { font-size: 2.25rem; }
 .text-3xl { font-size: 1.875rem; }
 .text-2xl { font-size: 1.5rem; }
@@ -656,7 +656,6 @@ html, body {
 .mb-8 { margin-bottom: 2rem; }
 .mr-2 { margin-right: 0.5rem; }
 
-/* Custom Scrollbars */
 .card-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -675,7 +674,7 @@ html, body {
   background: #94a3b8;
 }
 
-/* Mobile Styles */
+
 @media (max-width: 768px) {
   .header-content {
     padding: 0.75rem;
