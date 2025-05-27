@@ -271,10 +271,7 @@ const getRankClass = (index) => {
 // ——————————————————————————————
 // State
 // ——————————————————————————————
-let isLogin = true;
 
-// ——————————————————————————————
-// Tab Switching
 // ——————————————————————————————
 const loginTab = document.getElementById('login-tab');
 const registerTab = document.getElementById('register-tab');
