@@ -1,17 +1,7 @@
 import * as math from "mathjs"
-import { initializeApp } from "firebase/app"
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-} from "firebase/auth"
-import { getDatabase, ref, set, update, onValue, push, orderByChild, equalTo, once } from "firebase/database"
+import firebase from "firebase/app"
+import "firebase/auth"
+import "firebase/database"
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXLFrgXRvgyAjXWI0e9eiCAtEw50xSLHs",
@@ -23,9 +13,9 @@ const firebaseConfig = {
   databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com/",
 }
 
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
-const database = getDatabase(app)
+firebase.initializeApp(firebaseConfig)
+const auth = firebase.auth()
+const database = firebase.database()
 
 let currentUser = null
 let isLogin = true
@@ -205,7 +195,7 @@ const getAIResponse = async (question) => {
   const wolframAnswer = await getWolframAnswer(question)
   if (wolframAnswer) return wolframAnswer
 
-  return `<div class="error">⚠️ Sorry, I couldn't find an answer.</div>`
+  return getEducationalResponse(question)
 }
 
 // Utility Functions
@@ -272,6 +262,13 @@ const switchToLogin = () => {
   document.getElementById("password").placeholder = "Enter your password"
   document.getElementById("auth-button-text").textContent = "Sign In"
   document.querySelector("#auth-submit i").className = "fas fa-sign-in-alt mr-2"
+
+  // Hide confirm password field
+  const confirmGroup = document.getElementById("confirm-group")
+  if (confirmGroup) {
+    confirmGroup.style.display = "none"
+  }
+
   hideError()
 }
 
@@ -282,6 +279,13 @@ const switchToRegister = () => {
   document.getElementById("password").placeholder = "Create a password"
   document.getElementById("auth-button-text").textContent = "Create Account"
   document.querySelector("#auth-submit i").className = "fas fa-user-plus mr-2"
+
+  // Show confirm password field
+  const confirmGroup = document.getElementById("confirm-group")
+  if (confirmGroup) {
+    confirmGroup.style.display = "block"
+  }
+
   hideError()
 }
 
@@ -304,10 +308,10 @@ async function handleAuth(e) {
 
   try {
     if (isLogin) {
-      await signInWithEmailAndPassword(auth, email, password)
+      await auth.signInWithEmailAndPassword(email, password)
     } else {
-      const { user } = await createUserWithEmailAndPassword(auth, email, password)
-      await set(ref(database, `users/${user.uid}`), {
+      const { user } = await auth.createUserWithEmailAndPassword(email, password)
+      await database.ref(`users/${user.uid}`).set({
         email: user.email,
         questionsAsked: 0,
         lastActive: Date.now(),
@@ -323,8 +327,8 @@ async function handleAuth(e) {
   }
 }
 
-// Google Authentication Setup
-const googleProvider = new GoogleAuthProvider()
+// Google Authentication Setup - FIXED VERSION
+const googleProvider = new firebase.auth.GoogleAuthProvider()
 googleProvider.addScope("email")
 googleProvider.addScope("profile")
 
@@ -333,7 +337,7 @@ const resetGoogleButton = () => {
   const btn = document.getElementById("googleSignInBtn")
   if (btn) {
     btn.disabled = false
-    btn.innerHTML = `<i class="fab fa-google mr-2"></i> Sign in with Google`
+    btn.innerHTML = `<i class="fab fa-google mr-2"></i>Sign in / Sign up with Google`
   }
 }
 
@@ -347,23 +351,23 @@ const handleGoogleSignIn = async () => {
   hideError()
 
   try {
-    // Try popup first, fallback to redirect if popup is blocked
-    const result = await signInWithPopup(auth, googleProvider)
+    // Try popup first
+    const result = await auth.signInWithPopup(googleProvider)
 
     if (result.user) {
       const user = result.user
 
       // Check if user exists in database, if not create entry
-      const userSnapshot = await once(ref(database, `users/${user.uid}`))
+      const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
       if (!userSnapshot.exists()) {
-        await set(ref(database, `users/${user.uid}`), {
+        await database.ref(`users/${user.uid}`).set({
           email: user.email,
           questionsAsked: 0,
           lastActive: Date.now(),
         })
       } else {
         // Update last active time
-        await update(ref(database, `users/${user.uid}`), {
+        await database.ref(`users/${user.uid}`).update({
           lastActive: Date.now(),
         })
       }
@@ -376,7 +380,7 @@ const handleGoogleSignIn = async () => {
     // If popup was blocked, try redirect
     if (err.code === "auth/popup-blocked" || err.code === "auth/popup-closed-by-user") {
       try {
-        await signInWithRedirect(auth, googleProvider)
+        await auth.signInWithRedirect(googleProvider)
         return // Don't reset button state as redirect will reload page
       } catch (redirectErr) {
         console.error("Google redirect sign-in error:", redirectErr)
@@ -395,21 +399,21 @@ const handleGoogleSignIn = async () => {
 // Handle redirect result on page load
 const handleRedirectResult = async () => {
   try {
-    const result = await getRedirectResult(auth)
+    const result = await auth.getRedirectResult()
     if (result && result.user) {
       const user = result.user
 
       // Check if user exists in database, if not create entry
-      const userSnapshot = await once(ref(database, `users/${user.uid}`))
+      const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
       if (!userSnapshot.exists()) {
-        await set(ref(database, `users/${user.uid}`), {
+        await database.ref(`users/${user.uid}`).set({
           email: user.email,
           questionsAsked: 0,
           lastActive: Date.now(),
         })
       } else {
         // Update last active time
-        await update(ref(database, `users/${user.uid}`), {
+        await database.ref(`users/${user.uid}`).update({
           lastActive: Date.now(),
         })
       }
@@ -425,7 +429,7 @@ const handleRedirectResult = async () => {
 
 async function logout() {
   try {
-    await signOut(auth)
+    await auth.signOut()
     showElement("auth-container")
   } catch (err) {
     console.error("Error signing out:", err)
@@ -456,8 +460,8 @@ const submitQuestion = async (e) => {
   try {
     const answer = await getAIResponse(question)
 
-    const questionRef = push(ref(database, "questions"))
-    await set(questionRef, {
+    const questionRef = database.ref("questions").push()
+    await questionRef.set({
       question: question,
       answer: answer,
       timestamp: Date.now(),
@@ -465,12 +469,12 @@ const submitQuestion = async (e) => {
       userEmail: currentUser.email,
     })
 
-    const userRef = ref(database, `users/${currentUser.uid}`)
-    const userSnapshot = await once(userRef)
+    const userRef = database.ref(`users/${currentUser.uid}`)
+    const userSnapshot = await userRef.once("value")
     const userData = userSnapshot.val() || {}
     const currentQuestions = userData.questionsAsked || 0
 
-    await update(userRef, {
+    await userRef.update({
       lastActive: Date.now(),
       questionsAsked: currentQuestions + 1,
     })
@@ -490,25 +494,28 @@ const submitQuestion = async (e) => {
 const loadQuestionHistory = () => {
   if (!currentUser) return
 
-  const questionsRef = ref(database, "questions")
-  onValue(orderByChild(questionsRef, "userId"), equalTo(currentUser.uid), (snapshot) => {
-    const data = snapshot.val()
-    const questionsList = document.getElementById("questions-list")
-    const questionCount = document.getElementById("question-count")
+  const questionsRef = database.ref("questions")
+  questionsRef
+    .orderByChild("userId")
+    .equalTo(currentUser.uid)
+    .on("value", (snapshot) => {
+      const data = snapshot.val()
+      const questionsList = document.getElementById("questions-list")
+      const questionCount = document.getElementById("question-count")
 
-    if (data) {
-      const questions = Object.entries(data).map(([id, question]) => ({
-        id,
-        ...question,
-      }))
+      if (data) {
+        const questions = Object.entries(data).map(([id, question]) => ({
+          id,
+          ...question,
+        }))
 
-      questions.sort((a, b) => b.timestamp - a.timestamp)
+        questions.sort((a, b) => b.timestamp - a.timestamp)
 
-      questionCount.textContent = questions.length
+        questionCount.textContent = questions.length
 
-      questionsList.innerHTML = questions
-        .map(
-          (q) => `
+        questionsList.innerHTML = questions
+          .map(
+            (q) => `
                 <div class="question-item">
                     <div class="question-content">
                         <div class="question-text">
@@ -524,24 +531,24 @@ const loadQuestionHistory = () => {
                     </div>
                 </div>
             `,
-        )
-        .join("")
-    } else {
-      questionCount.textContent = "0"
-      questionsList.innerHTML = `
+          )
+          .join("")
+      } else {
+        questionCount.textContent = "0"
+        questionsList.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-comments"></i>
                     <p>No questions asked yet.</p>
                     <small>Start by asking your first question!</small>
                 </div>
             `
-    }
-  })
+      }
+    })
 }
 
 const loadLeaderboard = () => {
-  const usersRef = ref(database, "users")
-  onValue(usersRef, (snapshot) => {
+  const usersRef = database.ref("users")
+  usersRef.on("value", (snapshot) => {
     const data = snapshot.val()
     const usersList = document.getElementById("users-list")
     const totalUsers = document.getElementById("total-users")
@@ -625,7 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
   handleRedirectResult()
 
   // Auth state observer
-  onAuthStateChanged(auth, (user) => {
+  auth.onAuthStateChanged((user) => {
     if (user) {
       currentUser = user
       document.getElementById("user-email").textContent = user.email
@@ -651,3 +658,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 2000)
 })
+
