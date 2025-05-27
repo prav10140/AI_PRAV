@@ -152,23 +152,23 @@ async function getWolframAnswer(question) {
 
     const pods = data.queryresult.pods;
 
-    // Find pod with plaintext and "result" in title, or fallback to any pod with plaintext
-    let answerPod = pods.find(p => 
-      p.title.toLowerCase().includes("result") && p.subpods[0].plaintext.trim() !== ""
-    );
-    if (!answerPod) {
-      answerPod = pods.find(p => p.subpods[0].plaintext.trim() !== "");
-    }
+    // Collect all pods with non-empty plaintext to show detailed info
+    const detailedPods = pods.filter(p => p.subpods[0].plaintext.trim() !== "");
 
-    if (!answerPod) {
-      return null;
-    }
+    if (detailedPods.length === 0) return null;
 
-    return `🧮 Wolfram Alpha Answer: ${answerPod.subpods[0].plaintext}`;
+    // Format the answer by combining pod titles and plaintext
+    let fullAnswer = detailedPods.map(pod => {
+      return `📌 ${pod.title}:\n${pod.subpods[0].plaintext}`;
+    }).join("\n\n");
+
+    return fullAnswer;
+
   } catch (error) {
     return null;
   }
 }
+
 
 const getAIResponse = async (question) => {
   if (isMathExpression(question)) {
