@@ -268,18 +268,6 @@ const getRankClass = (index) => {
     return "rank-default";
 };
 
-const showElement = id => document.getElementById(id).style.display = 'block';
-const hideElement = id => document.getElementById(id).style.display = 'none';
-
-function showError(message) {
-  const errorDiv  = document.getElementById('error-message');
-  const errorText = document.getElementById('error-text');
-  errorText.textContent = message;
-  errorDiv.style.display = 'flex';
-}
-function hideError() {
-  document.getElementById('error-message').style.display = 'none';
-}
 
 // ===============================
 // Auth Tab Switching
