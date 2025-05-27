@@ -276,6 +276,7 @@ const switchToLogin = () => {
   document.querySelector('#auth-submit i').className = 'fas fa-sign-in-alt mr-2';
   hideError();
 };
+
 const switchToRegister = () => {
   isLogin = false;
   document.getElementById('register-tab').classList.add('active');
@@ -285,6 +286,7 @@ const switchToRegister = () => {
   document.querySelector('#auth-submit i').className = 'fas fa-user-plus mr-2';
   hideError();
 };
+
 document.getElementById('login-tab').addEventListener('click', switchToLogin);
 document.getElementById('register-tab').addEventListener('click', switchToRegister);
 
@@ -292,11 +294,10 @@ async function handleAuth(e) {
   e.preventDefault();
   hideError();
 
-  const email      = document.getElementById('email').value.trim();
-  const password   = document.getElementById('password').value;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
   const confirmPwd = document.getElementById('confirm-password')?.value;
-  const btn        = document.getElementById('auth-submit');
-
+  const btn = document.getElementById('auth-submit');
 
   if (!isLogin && password !== confirmPwd) {
     showError("Passwords don't match");
@@ -328,33 +329,47 @@ async function handleAuth(e) {
     }`;
   }
 }
+
 document.getElementById('auth-form').addEventListener('submit', handleAuth);
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
-document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+
+const handleGoogleSignIn = async () => {
   const btn = document.getElementById('googleSignInBtn');
   btn.disabled = true;
   btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Signing in with Google...`;
   hideError();
 
   try {
-    const { user } = await auth.signInWithPopup(googleProvider);
-    const snap = await database.ref(`users/${user.uid}`).once('value');
-    if (!snap.exists()) {
-      await database.ref(`users/${user.uid}`).set({
-        email: user.email,
-        questionsAsked: 0,
-        lastActive: Date.now(),
-      });
-    }
-    hideElement('auth-container');
+    await auth.signInWithRedirect(googleProvider);
   } catch (err) {
     showError('Google sign-in failed: ' + err.message);
     btn.disabled = false;
     btn.innerHTML = `<i class="fab fa-google mr-2"></i> Sign in with Google`;
   }
-});
+};
 
+document.getElementById('googleSignInBtn').addEventListener('click', handleGoogleSignIn);
+
+window.addEventListener('load', async () => {
+  try {
+    const result = await auth.getRedirectResult();
+    if (result.user) {
+      const user = result.user;
+      const snap = await database.ref(`users/${user.uid}`).once('value');
+      if (!snap.exists()) {
+        await database.ref(`users/${user.uid}`).set({
+          email: user.email,
+          questionsAsked: 0,
+          lastActive: Date.now(),
+        });
+      }
+      hideElement('auth-container');
+    }
+  } catch (err) {
+    showError('Google sign-in failed: ' + err.message);
+  }
+});
 
 async function logout() {
   try {
@@ -364,23 +379,16 @@ async function logout() {
     console.error('Error signing out:', err);
   }
 }
+
 document.getElementById('logout-btn').addEventListener('click', logout);
 
-
 const switchTab = (tabName) => {
-
-    document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
-    
-
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    
-
-    document.querySelectorAll('.question-section, .history-section, .leaderboard-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    
-
-    document.getElementById(`${tabName}-section`).classList.add('active');
+  document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  document.querySelectorAll('.question-section, .history-section, .leaderboard-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  document.getElementById(`${tabName}-section`).classList.add('active');
 };
 
 const submitQuestion = async (e) => {
