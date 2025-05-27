@@ -152,23 +152,30 @@ async function getWolframAnswer(question) {
     const pods = data.queryresult.pods;
 
     // Filter pods with at least one subpod having non-empty plaintext
-    const detailedPods = pods.filter(pod => 
+    const detailedPods = pods.filter(pod =>
       pod.subpods && pod.subpods.some(sub => sub.plaintext && sub.plaintext.trim() !== "")
     );
 
     if (detailedPods.length === 0) return null;
 
-    // Format the answer by combining pod titles and their plaintext(s)
-    let fullAnswer = detailedPods.map(pod => {
-      // Join all plaintexts in subpods of this pod (usually one)
+    // Format the answer as HTML
+    let formattedAnswer = '';
+
+    detailedPods.forEach(pod => {
       const allTexts = pod.subpods
         .map(sub => sub.plaintext.trim())
         .filter(text => text !== "")
-        .join("\n");
-      return `📌 ${pod.title}:\n${allTexts}`;
-    }).join("\n\n");
+        .join("<br>"); // Use <br> for line breaks inside a pod
 
-    return fullAnswer;
+      formattedAnswer += `
+        <div class="pod-section">
+          <h4>${pod.title}</h4>
+          <p>${allTexts}</p>
+        </div>
+      `;
+    });
+
+    return formattedAnswer;
 
   } catch (error) {
     return null;
@@ -180,18 +187,18 @@ const getAIResponse = async (question) => {
   if (isMathExpression(question)) {
     try {
       const result = math.evaluate(question);
-      return `🧮 Answer: ${result}`;
+      return `<div class="math-answer">🧮 Answer: <strong>${result}</strong></div>`;
     } catch (err) {
       const wolframAnswer = await getWolframAnswer(question);
       if (wolframAnswer) return wolframAnswer;
-      return "⚠️ Sorry, I couldn't evaluate this expression.";
+      return `<div class="error">⚠️ Sorry, I couldn't evaluate this expression.</div>`;
     }
   }
 
   const wolframAnswer = await getWolframAnswer(question);
   if (wolframAnswer) return wolframAnswer;
 
-  return "⚠️ Sorry, I couldn't find an answer.";
+  return `<div class="error">⚠️ Sorry, I couldn't find an answer.</div>`;
 };
 
 
