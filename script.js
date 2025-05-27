@@ -139,10 +139,10 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 // AI Response Function
 const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
 
-// Call your own Vercel API to query Wolfram Alpha
+// Call your separately hosted Vercel backend to query Wolfram Alpha
 async function getWolframAnswer(question) {
   try {
-    const res = await fetch(`/api/wolfram?query=${encodeURIComponent(question)}`);
+    const res = await fetch(`https://my-app-two-flame-49.vercel.app/api/wolfram?query=${encodeURIComponent(question)}`);
     if (!res.ok) throw new Error("Proxy API request failed");
 
     const data = await res.json();
@@ -153,7 +153,7 @@ async function getWolframAnswer(question) {
     const pods = data.queryresult.pods;
 
     // Find pod with title containing "Result" or fallback to first pod with plaintext
-    let answerPod = pods.find(p => 
+    let answerPod = pods.find(p =>
       p.title.toLowerCase().includes("result") && p.subpods[0].plaintext.trim() !== ""
     );
     if (!answerPod) {
