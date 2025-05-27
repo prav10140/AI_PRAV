@@ -138,38 +138,20 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 
 // AI Response Function
 // AI Response Function
+const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
+
 const getAIResponse = async (question) => {
-    if (GEMINI_API_KEY && GEMINI_API_KEY !== "AIzaSyD3XF2z5AfuKN389qSmODMEFO9OBYSApnI") {
+    if (isMathExpression(question)) {
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [{ text: question }]
-                        }
-                    ]
-                })
-            });
-
-            const data = await response.json();
-
-            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                return getEducationalResponse(question); // fallback
-            }
-
-        } catch (error) {
-            console.error("Gemini API Error:", error);
-            return getEducationalResponse(question); // fallback
+            const result = math.evaluate(question);
+            return `🧮 Answer: ${result}`;
+        } catch (err) {
+            return "⚠️ Sorry, I couldn't evaluate this expression.";
         }
-    } else {
-        return getEducationalResponse(question); // fallback if no Gemini key
     }
+
+    // Fallback to knowledge base
+    return getEducationalResponse(question);
 };
 
 
