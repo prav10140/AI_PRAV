@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student AI Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-container">
+            <div class="loading-content">
+                <div class="spinner">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Student AI Assistant</h2>
+                <p>Loading your learning companion...</p>
+            </div>
+        </div>
+
+        <!-- Authentication Form -->
+        <div id="auth-container" class="auth-container" style="display: none;">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <i class="fas fa-brain text-4xl text-blue-600 mb-4"></i>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Student AI Assistant</h1>
+                    <p class="text-gray-600 mb-8">Access your personalized AI learning companion</p>
+                </div>
+
+                <div class="auth-tabs">
+                    <button id="login-tab" class="tab-button active">Login</button>
+                    <button id="register-tab" class="tab-button">Register</button>
+                </div>
+
+                <form id="auth-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+
+                    <div id="error-message" class="error-message" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="error-text"></span>
+                    </div>
+
+                    <button type="submit" id="auth-submit" class="submit-button">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        <span id="auth-button-text">Sign In</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard" style="display: none;">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <i class="fas fa-brain text-2xl text-blue-600"></i>
+                        <h1 class="header-title">Student AI Assistant</h1>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info">
+                            <i class="fas fa-user"></i>
+                            <span id="user-email"></span>
+                        </div>
+                        <button id="logout-btn" class="logout-button">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Mobile Navigation -->
+            <nav class="mobile-nav">
+                <button class="nav-button active" data-tab="ask">
+                    <i class="fas fa-question-circle"></i>
+                    Ask
+                </button>
+                <button class="nav-button" data-tab="history">
+                    <i class="fas fa-history"></i>
+                    History
+                </button>
+                <button class="nav-button" data-tab="leaderboard">
+                    <i class="fas fa-trophy"></i>
+                    Leaderboard
+                </button>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="dashboard-main">
+                <div class="dashboard-grid">
+                    <!-- Question Form Section -->
+                    <div id="question-section" class="question-section active">
+                        <div class="question-form-card">
+                            <div class="card-header">
+                                <i class="fas fa-paper-plane"></i>
+                                <h2>Ask a Question</h2>
+                            </div>
+                            <div class="card-content">
+                                <form id="question-form">
+                                    <div class="form-group">
+                                        <textarea 
+                                            id="question-input" 
+                                            placeholder="What would you like to know? Ask any question and get an AI-powered answer..."
+                                            rows="4"
+                                            class="question-textarea"
+                                        ></textarea>
+                                    </div>
+                                    <button type="submit" id="submit-question" class="submit-question-button">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Submit Question
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Section -->
+                    <div id="history-section" class="history-section">
+                        <div class="history-card">
+                            <div class="card-header">
+                                <i class="fas fa-history"></i>
+                                <h2>Your Question History</h2>
+                                <span id="question-count" class="question-count">0</span>
+                            </div>
+                            <div class="card-content">
+                                <div id="questions-list" class="questions-list">
+                                    <div class="empty-state">
+                                        <i class="fas fa-comments"></i>
+                                        <p>No questions asked yet.</p>
+                                        <small>Start by asking your first question!</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Section -->
+                    <div id="leaderboard-section" class="leaderboard-section">
+                        <div class="leaderboard-card">
+                            <div class="card-header">
+                                <i class="fas fa-trophy"></i>
+                                <h2>Leaderboard</h2>
+                                <span id="user-count" class="user-count">
+                                    <i class="fas fa-users"></i>
+                                    <span id="total-users">0</span>
+                                </span>
+                            </div>
+                            <div class="card-content">
+                                <div id="users-list" class="users-list">
+                                    <div class="empty-state">
+                                        <i class="fas fa-trophy"></i>
+                                        <p>No active users yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+    
+    <!-- Main JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
