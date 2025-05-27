@@ -89,23 +89,7 @@ body {
 }
 
 /* Authentication Styles */
-.auth-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
-}
 
-.auth-card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  padding: 2rem;
-  width: 100%;
-  max-width: 400px;
-}
 
 .auth-header {
   text-align: center;
@@ -202,6 +186,66 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* Make sure html/body fill viewport */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/* Centering container (you already have flex but ensure full height) */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;          /* full viewport */
+  width: 100%;
+  position: fixed;            /* stay on top */
+  top: 0; left: 0;            /* fill screen */
+  background: rgba(0,0,0,0.2); /* semi‑transparent overlay */
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Confirm‑Password group hidden by default—JS will toggle it */
+#confirm-group {
+  display: none;
+}
+
+/* Divider before Google button */
+.divider {
+  text-align: center;
+  color: #6b7280;   /* Tailwind gray‑500 */
+  margin: 1.5rem 0;
+}
+
+/* Google Sign‑In button */
+.google-signin-button {
+  background: #4285F4;
+  color: white;
+  padding: 0.75rem;
+  width: 100%;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.google-signin-button:hover:not(:disabled) {
+  background: #357ae8;
+}
+
+/* If you want to ensure your form-card never grows too wide */
+.auth-card {
+  max-width: 400px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 
 /* Dashboard Styles */
 .dashboard {
