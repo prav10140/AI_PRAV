@@ -260,6 +260,7 @@ const switchToLogin = () => {
   document.getElementById("login-tab").classList.add("active")
   document.getElementById("register-tab").classList.remove("active")
   document.getElementById("password").placeholder = "Enter your password"
+  document.getElementById("password").setAttribute("autocomplete", "current-password")
   document.getElementById("auth-button-text").textContent = "Sign In"
   document.querySelector("#auth-submit i").className = "fas fa-sign-in-alt mr-2"
 
@@ -277,6 +278,7 @@ const switchToRegister = () => {
   document.getElementById("register-tab").classList.add("active")
   document.getElementById("login-tab").classList.remove("active")
   document.getElementById("password").placeholder = "Create a password"
+  document.getElementById("password").setAttribute("autocomplete", "new-password")
   document.getElementById("auth-button-text").textContent = "Create Account"
   document.querySelector("#auth-submit i").className = "fas fa-user-plus mr-2"
 
@@ -327,7 +329,7 @@ async function handleAuth(e) {
   }
 }
 
-// Google Authentication Setup - using global firebase object
+// Google Authentication Setup - IMPROVED VERSION TO HANDLE CORS ISSUES
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 googleProvider.addScope("email")
 googleProvider.addScope("profile")
@@ -341,7 +343,7 @@ const resetGoogleButton = () => {
   }
 }
 
-// Handle Google Sign-In with improved error handling
+// Handle Google Sign-In with improved CORS handling
 const handleGoogleSignIn = async () => {
   const btn = document.getElementById("googleSignInBtn")
   if (!btn) return
@@ -351,43 +353,18 @@ const handleGoogleSignIn = async () => {
   hideError()
 
   try {
-    // Try popup first
-    const result = await auth.signInWithPopup(googleProvider)
-
-    if (result.user) {
-      const user = result.user
-
-      // Check if user exists in database, if not create entry
-      const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
-      if (!userSnapshot.exists()) {
-        await database.ref(`users/${user.uid}`).set({
-          email: user.email,
-          questionsAsked: 0,
-          lastActive: Date.now(),
-        })
-      } else {
-        // Update last active time
-        await database.ref(`users/${user.uid}`).update({
-          lastActive: Date.now(),
-        })
-      }
-
-      hideElement("auth-container")
-    }
+    // Use redirect method to avoid CORS popup issues
+    await auth.signInWithRedirect(googleProvider)
   } catch (err) {
     console.error("Google sign-in error:", err)
 
-    // If popup was blocked, try redirect
-    if (err.code === "auth/popup-blocked" || err.code === "auth/popup-closed-by-user") {
-      try {
-        await auth.signInWithRedirect(googleProvider)
-        return // Don't reset button state as redirect will reload page
-      } catch (redirectErr) {
-        console.error("Google redirect sign-in error:", redirectErr)
-        showError("Google sign-in failed. Please try again or use email/password.")
-      }
+    // Handle specific error cases
+    if (err.code === "auth/popup-blocked") {
+      showError("Popup was blocked. Please allow popups for this site and try again.")
     } else if (err.code === "auth/cancelled-popup-request") {
       // User cancelled, just reset button
+    } else if (err.code === "auth/network-request-failed") {
+      showError("Network error. Please check your connection and try again.")
     } else {
       showError("Google sign-in failed: " + (err.message || "Unknown error"))
     }
@@ -396,7 +373,7 @@ const handleGoogleSignIn = async () => {
   }
 }
 
-// Handle redirect result on page load
+// Handle redirect result on page load - IMPROVED VERSION
 const handleRedirectResult = async () => {
   try {
     const result = await auth.getRedirectResult()
@@ -419,10 +396,13 @@ const handleRedirectResult = async () => {
       }
 
       hideElement("auth-container")
+      console.log("Google sign-in successful!")
     }
   } catch (err) {
     console.error("Google redirect result error:", err)
-    showError("Google sign-in failed: " + (err.message || "Unknown error"))
+    if (err.code !== "auth/invalid-api-key") {
+      showError("Google sign-in failed: " + (err.message || "Unknown error"))
+    }
     resetGoogleButton()
   }
 }
@@ -658,3 +638,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 2000)
 })
+
