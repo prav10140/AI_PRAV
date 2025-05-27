@@ -10,8 +10,7 @@ const firebaseConfig = {
 }
 
 
-// Optional: Google Gemini API Key
-const GEMINI_API_KEY = "AIzaSyD3XF2z5AfuKN389qSmODMEFO9OBYSApnI"; // Optional - leave empty for offline mode
+
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -140,47 +139,60 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 // AI Response Function
 const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
 
-const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/Salesforce/codegen-2B-mono"; // better codegen model
-const HUGGING_FACE_TOKEN = "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"; // your token
+const WOLFRAM_APPID = "LHRUQL-3QP3LLWTV2";
+
+// Call Wolfram Alpha Full Results API
+async function getWolframAnswer(question) {
+  const url = `https://api.wolframalpha.com/v2/query?appid=${WOLFRAM_APPID}&input=${encodeURIComponent(question)}&output=JSON`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Wolfram API request failed");
+
+    const data = await res.json();
+    if (!data.queryresult.success) {
+      return null; // no result from Wolfram
+    }
+
+    const pods = data.queryresult.pods;
+
+    // Find pod with title containing "Result" or fallback to first pod with plaintext
+    let answerPod = pods.find(p => p.title.toLowerCase().includes("result") && p.subpods[0].plaintext.trim() !== "");
+    if (!answerPod) {
+      answerPod = pods.find(p => p.subpods[0].plaintext.trim() !== "");
+    }
+    if (!answerPod) {
+      return null; // no useful answer found
+    }
+
+    return `🧮 Wolfram Alpha Answer: ${answerPod.subpods[0].plaintext}`;
+
+  } catch (error) {
+    return null; // API error, fallback later
+  }
+}
 
 const getAIResponse = async (question) => {
+    // If simple math expression, evaluate locally for speed
     if (isMathExpression(question)) {
         try {
             const result = math.evaluate(question);
             return `🧮 Answer: ${result}`;
         } catch (err) {
+            // fallback to Wolfram if local eval fails
+            const wolframAnswer = await getWolframAnswer(question);
+            if (wolframAnswer) return wolframAnswer;
             return "⚠️ Sorry, I couldn't evaluate this expression.";
         }
     }
 
-    // Use Hugging Face API for non-math questions
-    try {
-        const response = await fetch(HUGGING_FACE_API_URL, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${HUGGING_FACE_TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ inputs: question })
-        });
+    // For other questions, try Wolfram Alpha Full Results API
+    const wolframAnswer = await getWolframAnswer(question);
+    if (wolframAnswer) return wolframAnswer;
 
-        const data = await response.json();
-
-        if (data.error) {
-            return `⚠️ API Error: ${data.error}`;
-        }
-
-        if (Array.isArray(data) && data.length > 0) {
-            // for codegen models, generated text is usually in 'generated_text'
-            return data[0].generated_text || "⚠️ No response from AI model.";
-        }
-
-        return "⚠️ Unexpected response format from AI model.";
-
-    } catch (error) {
-        return `⚠️ Fetch error: ${error.message}`;
-    }
+    return "⚠️ Sorry, I couldn't find an answer.";
 };
+
 
 
 // Utility Functions
