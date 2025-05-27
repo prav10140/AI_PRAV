@@ -139,7 +139,7 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 // AI Response Function
 // AI Response Function
 const getAIResponse = async (question) => {
-    if (GEMINI_API_KEY && GEMINI_API_KEY !== "your_gemini_api_key_here") {
+    if (GEMINI_API_KEY && GEMINI_API_KEY !== "AIzaSyD3XF2z5AfuKN389qSmODMEFO9OBYSApnI") {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST",
