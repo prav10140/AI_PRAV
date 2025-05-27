@@ -22,124 +22,6 @@ let currentUser = null;
 let isLogin = true;
 
 // Comprehensive Educational Knowledge Base
-const getEducationalResponse = (question) => {
-    const lowerQuestion = question.toLowerCase();
-
-    // Mathematics
-    if (lowerQuestion.includes("algebra")) {
-        return "Algebra is about finding unknown values using equations. Key tips: 1) Always do the same operation to both sides of an equation. 2) Isolate the variable step by step. 3) Check your answer by substituting back. 4) Remember PEMDAS for order of operations. Practice with simple equations first, then gradually increase complexity.";
-    }
-
-    if (lowerQuestion.includes("geometry")) {
-        return "Geometry deals with shapes, sizes, and spatial relationships. Remember: 1) Draw diagrams to visualize problems. 2) Learn key formulas for area, perimeter, and volume. 3) Understand angle relationships (complementary = 90°, supplementary = 180°). 4) Use the Pythagorean theorem for right triangles (a² + b² = c²).";
-    }
-
-    if (lowerQuestion.includes("calculus")) {
-        return "Calculus studies rates of change (derivatives) and accumulation (integrals). Key concepts: 1) Limits describe behavior as values approach a point. 2) Derivatives find slopes and rates of change. 3) Integrals find areas under curves. 4) Practice with basic functions first (polynomials, trig functions).";
-    }
-
-    // Sciences
-    if (lowerQuestion.includes("photosynthesis")) {
-        return "Photosynthesis is how plants make food using sunlight. The equation is: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. This process occurs in chloroplasts and has two stages: light reactions (in thylakoids) and the Calvin cycle (in stroma). It's essential for life on Earth as it produces oxygen and glucose.";
-    }
-
-    if (lowerQuestion.includes("newton") && lowerQuestion.includes("law")) {
-        return "Newton's Three Laws of Motion: 1) First Law (Inertia): An object at rest stays at rest, and an object in motion stays in motion unless acted upon by an external force. 2) Second Law: Force = mass × acceleration (F=ma). 3) Third Law: For every action, there's an equal and opposite reaction. These laws explain all motion and are fundamental to physics.";
-    }
-
-    if (lowerQuestion.includes("periodic table")) {
-        return "The periodic table organizes elements by atomic number (number of protons). Key patterns: 1) Elements in the same column (group) have similar properties. 2) Atomic size decreases from left to right across a period. 3) Metals are on the left, nonmetals on the right, metalloids in between. 4) The table helps predict element behavior and chemical bonding.";
-    }
-
-    // History
-    if (lowerQuestion.includes("world war")) {
-        return "World Wars were global conflicts that reshaped the 20th century. WWI (1914-1918) was caused by imperialism, alliances, militarism, and nationalism. WWII (1939-1945) involved fascism vs. democracy and the Allies vs. Axis powers. Both wars led to major political, social, and technological changes. Study the causes, major battles, key figures, and long-term consequences.";
-    }
-
-    if (lowerQuestion.includes("american revolution")) {
-        return "The American Revolution (1775-1783) was fought for independence from British rule. Key causes: taxation without representation, restrictive laws like the Stamp Act. Important events: Boston Tea Party (1773), Declaration of Independence (1776), Valley Forge winter. Key figures: George Washington, Benjamin Franklin, Thomas Jefferson. Result: United States became an independent nation with a new democratic government.";
-    }
-
-    // Literature and English
-    if (lowerQuestion.includes("shakespeare")) {
-        return "William Shakespeare (1564-1616) wrote plays and sonnets that explore universal themes like love, power, betrayal, and human nature. Key works: Hamlet (revenge tragedy), Romeo and Juliet (tragic love), Macbeth (ambition and guilt). Tips for reading: understand the historical context, look up unfamiliar words, focus on character motivations, and remember that many phrases we use today come from Shakespeare.";
-    }
-
-    if (lowerQuestion.includes("essay writing")) {
-        return "Good essay structure: 1) Introduction with hook, background, and clear thesis statement. 2) Body paragraphs with topic sentences, evidence, and analysis. 3) Conclusion that reinforces your argument without just repeating. Tips: Plan before writing, use transitions between paragraphs, cite sources properly, vary sentence structure, and always revise for clarity and grammar.";
-    }
-
-    // Study Skills
-    if (lowerQuestion.includes("time management")) {
-        return "Effective time management strategies: 1) Use a planner or digital calendar. 2) Prioritize tasks by importance and deadline (urgent vs. important matrix). 3) Break large projects into smaller, manageable tasks. 4) Eliminate distractions during focused study time. 5) Use the Pomodoro Technique (25 min work, 5 min break). 6) Set realistic goals and deadlines.";
-    }
-
-    if (lowerQuestion.includes("note taking")) {
-        return "Effective note-taking methods: 1) Cornell Notes: divide page into notes, cues, and summary sections. 2) Mind mapping for visual learners and brainstorming. 3) Outline method for hierarchically organized information. 4) Write in your own words to ensure understanding. 5) Review and revise notes within 24 hours. 6) Use abbreviations and symbols for speed.";
-    }
-
-    if (lowerQuestion.includes("test anxiety")) {
-        return "Managing test anxiety: 1) Prepare thoroughly - confidence reduces anxiety. 2) Practice relaxation techniques like deep breathing or progressive muscle relaxation. 3) Get adequate sleep before the test. 4) Arrive early and bring all necessary materials. 5) Read all instructions carefully. 6) Start with easier questions to build confidence. 7) If you feel overwhelmed, take a moment to breathe and refocus.";
-    }
-
-    // Programming and Computer Science
-    if (lowerQuestion.includes("python")) {
-        return "Python is a beginner-friendly programming language. Key concepts: 1) Variables store data (numbers, strings, lists). 2) Functions perform specific tasks and can be reused. 3) Loops (for, while) repeat actions. 4) Conditionals (if, elif, else) make decisions. 5) Lists and dictionaries store collections of data. Start with simple programs like calculators, then move to more complex projects. Practice coding daily!";
-    }
-
-    if (lowerQuestion.includes("algorithm")) {
-        return "An algorithm is a step-by-step procedure to solve a problem. Good algorithms are: 1) Clear and unambiguous in their steps. 2) Efficient in time and space complexity. 3) Correct for all valid inputs. 4) Finite (they must eventually stop). Common algorithm types: sorting (bubble, merge, quick), searching (linear, binary), graph traversal (BFS, DFS). Practice by solving problems on coding platforms.";
-    }
-
-    // General Study Tips
-    if (lowerQuestion.includes("motivation") || lowerQuestion.includes("procrastination")) {
-        return "Staying motivated and beating procrastination: 1) Set specific, achievable goals with deadlines. 2) Break large tasks into smaller, less overwhelming pieces. 3) Reward yourself for completing tasks. 4) Find a study buddy or group for accountability. 5) Connect learning to your interests and future goals. 6) Take regular breaks to avoid burnout. 7) Remember that struggle is part of learning - don't give up!";
-    }
-
-    if (lowerQuestion.includes("memory") || lowerQuestion.includes("remember")) {
-        return "Memory improvement techniques: 1) Spaced repetition - review material at increasing intervals. 2) Active recall - test yourself instead of just re-reading. 3) Create associations and mnemonics. 4) Use the method of loci (memory palace). 5) Teach the material to someone else. 6) Get adequate sleep - memory consolidation happens during sleep. 7) Exercise regularly to improve brain function.";
-    }
-
-    // Default comprehensive response
-    return `Thank you for your question about "${question}". Here's some educational guidance:
-
-📚 **Study Strategies:**
-• Break complex topics into smaller, manageable parts
-• Use active learning: summarize, teach others, create examples
-• Connect new information to what you already know
-• Practice regularly rather than cramming before tests
-• Use multiple resources: textbooks, videos, practice problems
-
-🧠 **Learning Tips:**
-• Take notes in your own words to ensure understanding
-• Create visual aids like diagrams, charts, or mind maps
-• Form study groups to discuss and explain concepts
-• Ask questions when you don't understand something
-• Review material regularly to reinforce long-term memory
-
-💡 **Problem-Solving Approach:**
-1. Read the question carefully and understand what's being asked
-2. Identify what information you have and what you need to find
-3. Determine what methods, formulas, or concepts apply
-4. Work through the solution step by step
-5. Check your answer for reasonableness and accuracy
-6. Reflect on the process to improve future problem-solving
-
-🎯 **Subject-Specific Tips:**
-• **Math**: Practice problems daily, show all work, check answers
-• **Science**: Understand concepts before memorizing facts, do experiments
-• **History**: Create timelines, understand cause and effect
-• **Literature**: Read actively, analyze themes and characters
-• **Languages**: Practice speaking, immerse yourself in the language
-
-Remember: Learning is a process that takes time and practice. Don't be discouraged by initial difficulties - they're a normal and important part of developing understanding. Every expert was once a beginner!`;
-};
-
-// AI Response Function
-// AI Response Function
-const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
-
-// Call your hosted Vercel backend API
 async function getWolframAnswer(question) {
   try {
     const res = await fetch(`https://my-app-two-flame-49.vercel.app/api/wolfram?query=${encodeURIComponent(question)}`);
@@ -152,48 +34,26 @@ async function getWolframAnswer(question) {
 
     const pods = data.queryresult.pods;
 
-    // Filter pods with at least one subpod having non-empty plaintext
-    const detailedPods = pods.filter(pod => 
-      pod.subpods && pod.subpods.some(sub => sub.plaintext && sub.plaintext.trim() !== "")
-    );
+    // Find the first subpod with a plaintext and image
+    for (const pod of pods) {
+      for (const sub of pod.subpods) {
+        if (sub.plaintext && sub.img?.src) {
+          return {
+            title: pod.title,
+            answer: sub.plaintext.trim(),
+            image: sub.img.src
+          };
+        }
+      }
+    }
 
-    if (detailedPods.length === 0) return null;
-
-    // Format the answer by combining pod titles and their plaintext(s)
-    let fullAnswer = detailedPods.map(pod => {
-      // Join all plaintexts in subpods of this pod (usually one)
-      const allTexts = pod.subpods
-        .map(sub => sub.plaintext.trim())
-        .filter(text => text !== "")
-        .join("\n");
-      return `📌 ${pod.title}:\n${allTexts}`;
-    }).join("\n\n");
-
-    return fullAnswer;
+    // Fallback if no image
+    return null;
 
   } catch (error) {
     return null;
   }
 }
-
-
-const getAIResponse = async (question) => {
-  if (isMathExpression(question)) {
-    try {
-      const result = math.evaluate(question);
-      return `🧮 Answer: ${result}`;
-    } catch (err) {
-      const wolframAnswer = await getWolframAnswer(question);
-      if (wolframAnswer) return wolframAnswer;
-      return "⚠️ Sorry, I couldn't evaluate this expression.";
-    }
-  }
-
-  const wolframAnswer = await getWolframAnswer(question);
-  if (wolframAnswer) return wolframAnswer;
-
-  return "⚠️ Sorry, I couldn't find an answer.";
-};
 
 
 // Utility Functions
