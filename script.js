@@ -11,7 +11,7 @@ const firebaseConfig = {
 
 
 // Optional: Google Gemini API Key
-const GEMINI_API_KEY = "AIzaSyC0nNyGP6FIrEqQBlNv4wRchNfbJUhKBFo"; // Optional - leave empty for offline mode
+const GEMINI_API_KEY = "AIzaSyD3XF2z5AfuKN389qSmODMEFO9OBYSApnI"; // Optional - leave empty for offline mode
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
@@ -137,46 +137,41 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 };
 
 // AI Response Function
+// AI Response Function
 const getAIResponse = async (question) => {
-    // Try Gemini API if key is available
     if (GEMINI_API_KEY && GEMINI_API_KEY !== "your_gemini_api_key_here") {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     contents: [
                         {
-                            parts: [
-                                {
-                                    text: `You are a helpful AI assistant for students. Provide clear, educational answers to their questions. Keep responses concise but informative. Question: ${question}`,
-                                },
-                            ],
-                        },
-                    ],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 500,
-                    },
-                }),
+                            parts: [{ text: question }]
+                        }
+                    ]
+                })
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            }
-        } catch (error) {
-            console.log("Gemini API failed, using offline response:", error);
-        }
-    }
+            const data = await response.json();
 
-    // Fallback to offline response
-    return getEducationalResponse(question);
+            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                return getEducationalResponse(question); // fallback
+            }
+
+        } catch (error) {
+            console.error("Gemini API Error:", error);
+            return getEducationalResponse(question); // fallback
+        }
+    } else {
+        return getEducationalResponse(question); // fallback if no Gemini key
+    }
 };
+
 
 // Utility Functions
 const showElement = (id) => {
