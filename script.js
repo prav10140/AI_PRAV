@@ -1,9 +1,9 @@
-// Firebase Configuration - Replace with your config
+
 const firebaseConfig = {
   apiKey: "AIzaSyAXLFrgXRvgyAjXWI0e9eiCAtEw50xSLHs",
   authDomain: "loginform-5eb02.firebaseapp.com",
   projectId: "loginform-5eb02",
-  storageBucket: "loginform-5eb02.firebasestorage.app",  // ✅ Corrected
+  storageBucket: "loginform-5eb02.firebasestorage.app", 
   messagingSenderId: "499608178000",
   appId: "1:499608178000:web:21ffbf36c22deb45f53055",
   databaseURL: "https://loginform-5eb02-default-rtdb.firebaseio.com/"
@@ -11,16 +11,16 @@ const firebaseConfig = {
 
 
 
-// Initialize Firebase
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
-// Global variables
+
 let currentUser = null;
 let isLogin = true;
 
-// Comprehensive Educational Knowledge Base
+// Knowledge Base
 const getEducationalResponse = (question) => {
     const lowerQuestion = question.toLowerCase();
 
@@ -134,11 +134,10 @@ const getEducationalResponse = (question) => {
 Remember: Learning is a process that takes time and practice. Don't be discouraged by initial difficulties - they're a normal and important part of developing understanding. Every expert was once a beginner!`;
 };
 
-// AI Response Function
-// AI Response Function
+
 const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
 
-// Call your hosted Vercel backend API
+
 async function getWolframAnswer(question) {
   try {
     const res = await fetch(`https://my-app-two-flame-49.vercel.app/api/wolfram?query=${encodeURIComponent(question)}`);
@@ -151,29 +150,28 @@ async function getWolframAnswer(question) {
 
     const pods = data.queryresult.pods;
 
-    // Filter pods with at least one subpod having non-empty plaintext or image
+    
     const detailedPods = pods.filter(pod =>
       pod.subpods && pod.subpods.some(sub => (sub.plaintext && sub.plaintext.trim() !== "") || sub.img?.src)
     );
 
     if (detailedPods.length === 0) return null;
 
-    // Format the answer as HTML with images
+    
     let formattedAnswer = '';
 
     detailedPods.forEach(pod => {
-      // Gather all plaintexts inside subpods
       const allTexts = pod.subpods
         .map(sub => sub.plaintext ? sub.plaintext.trim() : "")
         .filter(text => text !== "")
         .join("<br>");
 
-      // Gather all images inside subpods (if multiple, show all)
+ 
       const allImages = pod.subpods
         .map(sub => sub.img?.src)
         .filter(src => src);
 
-      // Compose HTML for this pod
+
       formattedAnswer += `
         <div class="pod-section">
           <h4>${pod.title}</h4>
@@ -196,7 +194,7 @@ const getAIResponse = async (question) => {
   if (isMathExpression(question)) {
     try {
       const result = math.evaluate(question);
-      return `<div class="math-answer">🧮 Answer: <strong>${result}</strong></div>`;
+      return `<div class="math-answer">Answer: <strong>${result}</strong></div>`;
     } catch (err) {
       const wolframAnswer = await getWolframAnswer(question);
       if (wolframAnswer) return wolframAnswer;
@@ -269,9 +267,6 @@ const getRankClass = (index) => {
 };
 
 
-// ===============================
-// Auth Tab Switching
-// ===============================
 const switchToLogin = () => {
   isLogin = true;
   document.getElementById('login-tab').classList.add('active');
@@ -293,9 +288,6 @@ const switchToRegister = () => {
 document.getElementById('login-tab').addEventListener('click', switchToLogin);
 document.getElementById('register-tab').addEventListener('click', switchToRegister);
 
-// ===============================
-// Handle Email/Password Auth
-// ===============================
 async function handleAuth(e) {
   e.preventDefault();
   hideError();
@@ -305,7 +297,7 @@ async function handleAuth(e) {
   const confirmPwd = document.getElementById('confirm-password')?.value;
   const btn        = document.getElementById('auth-submit');
 
-  // If registering, confirm match
+
   if (!isLogin && password !== confirmPwd) {
     showError("Passwords don't match");
     return;
@@ -338,9 +330,6 @@ async function handleAuth(e) {
 }
 document.getElementById('auth-form').addEventListener('submit', handleAuth);
 
-// ===============================
-// Google Sign‑In
-// ===============================
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
   const btn = document.getElementById('googleSignInBtn');
@@ -366,9 +355,7 @@ document.getElementById('googleSignInBtn').addEventListener('click', async () =>
   }
 });
 
-// ===============================
-// Logout
-// ===============================
+
 async function logout() {
   try {
     await auth.signOut();
@@ -380,20 +367,19 @@ async function logout() {
 document.getElementById('logout-btn').addEventListener('click', logout);
 
 
-// Dashboard Functions
 const switchTab = (tabName) => {
-    // Remove active class from all nav buttons
+
     document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
     
-    // Add active class to clicked button
+
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
     
-    // Hide all sections
+
     document.querySelectorAll('.question-section, .history-section, .leaderboard-section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Show selected section
+
     document.getElementById(`${tabName}-section`).classList.add('active');
 };
 
@@ -410,10 +396,10 @@ const submitQuestion = async (e) => {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting Answer...';
     
     try {
-        // Get AI response
+
         const answer = await getAIResponse(question);
         
-        // Save to Firebase
+
         const questionRef = database.ref('questions').push();
         await questionRef.set({
             question: question,
@@ -423,7 +409,7 @@ const submitQuestion = async (e) => {
             userEmail: currentUser.email,
         });
         
-        // Update user stats
+
         const userRef = database.ref(`users/${currentUser.uid}`);
         const userSnapshot = await userRef.once('value');
         const userData = userSnapshot.val() || {};
@@ -462,7 +448,7 @@ const loadQuestionHistory = () => {
                 ...question,
             }));
             
-            // Sort by timestamp descending (newest first)
+
             questions.sort((a, b) => b.timestamp - a.timestamp);
             
             questionCount.textContent = questions.length;
@@ -509,7 +495,7 @@ const loadLeaderboard = () => {
                 ...user,
             }));
             
-            // Sort by questions asked (descending) and then by last active
+
             users.sort((a, b) => {
                 if (b.questionsAsked !== a.questionsAsked) {
                     return b.questionsAsked - a.questionsAsked;
@@ -549,22 +535,20 @@ const loadLeaderboard = () => {
     });
 };
 
-// Event Listeners
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Auth tab switching
+
     document.getElementById('login-tab').addEventListener('click', switchToLogin);
     document.getElementById('register-tab').addEventListener('click', switchToRegister);
     
-    // Auth form submission
     document.getElementById('auth-form').addEventListener('submit', handleAuth);
     
-    // Logout button
     document.getElementById('logout-btn').addEventListener('click', logout);
     
-    // Question form submission
+
     document.getElementById('question-form').addEventListener('submit', submitQuestion);
     
-    // Mobile navigation
+
     document.querySelectorAll('.nav-button').forEach(btn => {
         btn.addEventListener('click', () => {
             const tab = btn.getAttribute('data-tab');
@@ -572,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Firebase auth state listener
+
     auth.onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
