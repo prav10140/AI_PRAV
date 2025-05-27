@@ -151,26 +151,34 @@ async function getWolframAnswer(question) {
 
     const pods = data.queryresult.pods;
 
-    // Filter pods with at least one subpod having non-empty plaintext
+    // Filter pods with at least one subpod having non-empty plaintext or image
     const detailedPods = pods.filter(pod =>
-      pod.subpods && pod.subpods.some(sub => sub.plaintext && sub.plaintext.trim() !== "")
+      pod.subpods && pod.subpods.some(sub => (sub.plaintext && sub.plaintext.trim() !== "") || sub.img?.src)
     );
 
     if (detailedPods.length === 0) return null;
 
-    // Format the answer as HTML
+    // Format the answer as HTML with images
     let formattedAnswer = '';
 
     detailedPods.forEach(pod => {
+      // Gather all plaintexts inside subpods
       const allTexts = pod.subpods
-        .map(sub => sub.plaintext.trim())
+        .map(sub => sub.plaintext ? sub.plaintext.trim() : "")
         .filter(text => text !== "")
-        .join("<br>"); // Use <br> for line breaks inside a pod
+        .join("<br>");
 
+      // Gather all images inside subpods (if multiple, show all)
+      const allImages = pod.subpods
+        .map(sub => sub.img?.src)
+        .filter(src => src);
+
+      // Compose HTML for this pod
       formattedAnswer += `
         <div class="pod-section">
           <h4>${pod.title}</h4>
           <p>${allTexts}</p>
+          ${allImages.map(src => `<img src="${src}" alt="${pod.title}" style="max-width:100%; margin-top:5px;">`).join("")}
         </div>
       `;
     });
@@ -178,6 +186,7 @@ async function getWolframAnswer(question) {
     return formattedAnswer;
 
   } catch (error) {
+    console.error(error);
     return null;
   }
 }
