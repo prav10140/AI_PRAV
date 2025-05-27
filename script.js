@@ -271,9 +271,8 @@ const getRankClass = (index) => {
 const showElement = id => document.getElementById(id).style.display = 'block';
 const hideElement = id => document.getElementById(id).style.display = 'none';
 
-// Single showError/hideError pair
 function showError(message) {
-  const errorDiv = document.getElementById('error-message');
+  const errorDiv  = document.getElementById('error-message');
   const errorText = document.getElementById('error-text');
   errorText.textContent = message;
   errorDiv.style.display = 'flex';
@@ -283,50 +282,43 @@ function hideError() {
 }
 
 // ===============================
-// Auth Modal Tab Switching
+// Auth Tab Switching
 // ===============================
-const loginTab      = document.getElementById('login-tab');
-const registerTab   = document.getElementById('register-tab');
-const confirmGroup  = document.getElementById('confirm-group');
-const authButton    = document.getElementById('auth-submit');
-const authButtonText= document.getElementById('auth-button-text');
-const authIcon      = document.querySelector('#auth-submit i');
-
-loginTab.addEventListener('click', () => {
+const switchToLogin = () => {
   isLogin = true;
-  loginTab.classList.add('active');
-  registerTab.classList.remove('active');
-  confirmGroup.style.display = 'none';
+  document.getElementById('login-tab').classList.add('active');
+  document.getElementById('register-tab').classList.remove('active');
   document.getElementById('password').placeholder = 'Enter your password';
-  authButtonText.textContent = 'Sign In';
-  authIcon.className = 'fas fa-sign-in-alt mr-2';
+  document.getElementById('auth-button-text').textContent = 'Sign In';
+  document.querySelector('#auth-submit i').className = 'fas fa-sign-in-alt mr-2';
   hideError();
-});
-
-registerTab.addEventListener('click', () => {
+};
+const switchToRegister = () => {
   isLogin = false;
-  registerTab.classList.add('active');
-  loginTab.classList.remove('active');
-  confirmGroup.style.display = 'block';
+  document.getElementById('register-tab').classList.add('active');
+  document.getElementById('login-tab').classList.remove('active');
   document.getElementById('password').placeholder = 'Create a password';
-  authButtonText.textContent = 'Create Account';
-  authIcon.className = 'fas fa-user-plus mr-2';
+  document.getElementById('auth-button-text').textContent = 'Create Account';
+  document.querySelector('#auth-submit i').className = 'fas fa-user-plus mr-2';
   hideError();
-});
+};
+document.getElementById('login-tab').addEventListener('click', switchToLogin);
+document.getElementById('register-tab').addEventListener('click', switchToRegister);
 
 // ===============================
-// Handle Login / Register Submit
+// Handle Email/Password Auth
 // ===============================
-document.getElementById('auth-form').addEventListener('submit', async e => {
+async function handleAuth(e) {
   e.preventDefault();
   hideError();
 
-  const email   = document.getElementById('email').value.trim();
-  const password= document.getElementById('password').value;
-  const confirm = document.getElementById('confirm-password').value;
-  const btn     = authButton;
+  const email      = document.getElementById('email').value.trim();
+  const password   = document.getElementById('password').value;
+  const confirmPwd = document.getElementById('confirm-password')?.value;
+  const btn        = document.getElementById('auth-submit');
 
-  if (!isLogin && password !== confirm) {
+  // If registering, confirm match
+  if (!isLogin && password !== confirmPwd) {
     showError("Passwords don't match");
     return;
   }
@@ -351,16 +343,23 @@ document.getElementById('auth-form').addEventListener('submit', async e => {
   } catch (err) {
     showError(err.message);
     btn.disabled = false;
-    authIcon.className = isLogin ? 'fas fa-sign-in-alt mr-2' : 'fas fa-user-plus mr-2';
-    authButtonText.textContent = isLogin ? 'Sign In' : 'Create Account';
+    btn.innerHTML = `<i class="fas ${isLogin ? 'fa-sign-in-alt' : 'fa-user-plus'} mr-2"></i>${
+      isLogin ? 'Sign In' : 'Create Account'
+    }`;
   }
-});
+}
+document.getElementById('auth-form').addEventListener('submit', handleAuth);
 
 // ===============================
 // Google Sign‑In
 // ===============================
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('googleSignInBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>Signing in with Google...`;
+  hideError();
+
   try {
     const { user } = await auth.signInWithPopup(googleProvider);
     const snap = await database.ref(`users/${user.uid}`).once('value');
@@ -374,8 +373,23 @@ document.getElementById('googleSignInBtn').addEventListener('click', async () =>
     hideElement('auth-container');
   } catch (err) {
     showError('Google sign-in failed: ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fab fa-google mr-2"></i> Sign in with Google`;
   }
 });
+
+// ===============================
+// Logout
+// ===============================
+async function logout() {
+  try {
+    await auth.signOut();
+    showElement('auth-container');
+  } catch (err) {
+    console.error('Error signing out:', err);
+  }
+}
+document.getElementById('logout-btn').addEventListener('click', logout);
 
 
 // Dashboard Functions
