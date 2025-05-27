@@ -427,7 +427,7 @@ async function handleAuth(e) {
   }`
 }
 
-// Google Authentication Setup
+// Google Authentication Setup - FIXED FOR POPUP METHOD
 const googleProvider = new firebase.auth.GoogleAuthProvider()
 googleProvider.addScope("email")
 googleProvider.addScope("profile")
@@ -441,7 +441,7 @@ const resetGoogleButton = () => {
   }
 }
 
-// Handle Google Sign-In
+// FIXED: Handle Google Sign-In with POPUP instead of REDIRECT
 const handleGoogleSignIn = async () => {
   const btn = document.getElementById("googleSignInBtn")
   if (!btn) return
@@ -451,48 +451,51 @@ const handleGoogleSignIn = async () => {
   hideError()
 
   try {
-    console.log("Starting Google sign-in...")
-    await auth.signInWithRedirect(googleProvider)
+    console.log("Starting Google sign-in with popup...")
+
+    // Use signInWithPopup instead of signInWithRedirect
+    const result = await auth.signInWithPopup(googleProvider)
+    const user = result.user
+
+    console.log("Google sign-in successful:", user.email)
+
+    // Check if user exists in database, if not create entry
+    const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
+    if (!userSnapshot.exists()) {
+      console.log("Creating new user in database...")
+      await database.ref(`users/${user.uid}`).set({
+        email: user.email,
+        questionsAsked: 0,
+        lastActive: Date.now(),
+      })
+    } else {
+      console.log("Updating existing user...")
+      await database.ref(`users/${user.uid}`).update({
+        lastActive: Date.now(),
+      })
+    }
+
+    // Success message
+    console.log("Google authentication completed successfully")
   } catch (err) {
     console.error("Google sign-in error:", err)
-    showError("Google sign-in failed: " + (err.message || "Unknown error"))
-    resetGoogleButton()
-  }
-}
 
-// Handle redirect result on page load
-const handleRedirectResult = async () => {
-  try {
-    console.log("Checking for redirect result...")
-    const result = await auth.getRedirectResult()
-    if (result && result.user) {
-      console.log("Google sign-in redirect successful:", result.user.email)
-      const user = result.user
-
-      // Check if user exists in database, if not create entry
-      const userSnapshot = await database.ref(`users/${user.uid}`).once("value")
-      if (!userSnapshot.exists()) {
-        console.log("Creating new user in database...")
-        await database.ref(`users/${user.uid}`).set({
-          email: user.email,
-          questionsAsked: 0,
-          lastActive: Date.now(),
-        })
-      } else {
-        console.log("Updating existing user...")
-        await database.ref(`users/${user.uid}`).update({
-          lastActive: Date.now(),
-        })
-      }
-    }
-  } catch (err) {
-    console.error("Google redirect result error:", err)
-    if (err.code !== "auth/invalid-api-key") {
+    // Handle specific error cases
+    if (err.code === "auth/popup-closed-by-user") {
+      showError("Sign-in was cancelled. Please try again.")
+    } else if (err.code === "auth/popup-blocked") {
+      showError("Popup was blocked by your browser. Please allow popups and try again.")
+    } else if (err.code === "auth/cancelled-popup-request") {
+      showError("Another sign-in popup is already open.")
+    } else {
       showError("Google sign-in failed: " + (err.message || "Unknown error"))
     }
+
     resetGoogleButton()
   }
 }
+
+// REMOVED: handleRedirectResult function since we're using popup now
 
 async function logout() {
   try {
@@ -741,9 +744,6 @@ document.addEventListener("DOMContentLoaded", () => {
       switchTab(tab)
     })
   })
-
-  // Handle redirect result on page load
-  handleRedirectResult()
 
   // Setup auth state listener - THIS IS CRUCIAL
   setupAuthStateListener()
