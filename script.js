@@ -152,14 +152,21 @@ async function getWolframAnswer(question) {
 
     const pods = data.queryresult.pods;
 
-    // Collect all pods with non-empty plaintext to show detailed info
-    const detailedPods = pods.filter(p => p.subpods[0].plaintext.trim() !== "");
+    // Filter pods with at least one subpod having non-empty plaintext
+    const detailedPods = pods.filter(pod => 
+      pod.subpods && pod.subpods.some(sub => sub.plaintext && sub.plaintext.trim() !== "")
+    );
 
     if (detailedPods.length === 0) return null;
 
-    // Format the answer by combining pod titles and plaintext
+    // Format the answer by combining pod titles and their plaintext(s)
     let fullAnswer = detailedPods.map(pod => {
-      return `📌 ${pod.title}:\n${pod.subpods[0].plaintext}`;
+      // Join all plaintexts in subpods of this pod (usually one)
+      const allTexts = pod.subpods
+        .map(sub => sub.plaintext.trim())
+        .filter(text => text !== "")
+        .join("\n");
+      return `📌 ${pod.title}:\n${allTexts}`;
     }).join("\n\n");
 
     return fullAnswer;
