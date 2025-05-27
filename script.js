@@ -140,8 +140,8 @@ Remember: Learning is a process that takes time and practice. Don't be discourag
 // AI Response Function
 const isMathExpression = (text) => /^[0-9\s+\-*/().^]+$/.test(text.trim());
 
-const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/gpt2"; // or your desired model
-const HUGGING_FACE_TOKEN = "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";
+const HUGGING_FACE_API_URL = "https://api-inference.huggingface.co/models/Salesforce/codegen-2B-mono"; // better codegen model
+const HUGGING_FACE_TOKEN = "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"; // your token
 
 const getAIResponse = async (question) => {
     if (isMathExpression(question)) {
@@ -170,8 +170,8 @@ const getAIResponse = async (question) => {
             return `⚠️ API Error: ${data.error}`;
         }
 
-        // Assuming the model returns an array of generated texts
         if (Array.isArray(data) && data.length > 0) {
+            // for codegen models, generated text is usually in 'generated_text'
             return data[0].generated_text || "⚠️ No response from AI model.";
         }
 
