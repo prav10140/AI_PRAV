@@ -198,12 +198,22 @@ const getAIResponse = async (question) => {
   return getEducationalResponse(question)
 }
 
-// Utility Functions - IMPROVED WITH BETTER DISPLAY HANDLING
+// ENHANCED UTILITY FUNCTIONS WITH FORCE DISPLAY
 const showElement = (id) => {
   const element = document.getElementById(id)
   if (element) {
+    // Force display by removing inline style and setting via style property
+    element.style.removeProperty("display")
     element.style.display = "block"
-    console.log(`Showing element: ${id}`)
+    element.style.visibility = "visible"
+
+    // Also remove any hidden classes
+    element.classList.remove("hidden")
+
+    console.log(`Showing element: ${id} - Current display: ${element.style.display}`)
+    console.log(`Element computed style:`, window.getComputedStyle(element).display)
+  } else {
+    console.error(`Element not found: ${id}`)
   }
 }
 
@@ -211,7 +221,10 @@ const hideElement = (id) => {
   const element = document.getElementById(id)
   if (element) {
     element.style.display = "none"
+    element.style.visibility = "hidden"
     console.log(`Hiding element: ${id}`)
+  } else {
+    console.error(`Element not found: ${id}`)
   }
 }
 
@@ -231,19 +244,60 @@ const hideError = () => {
   }
 }
 
-// IMPROVED NAVIGATION FUNCTIONS
+// ENHANCED NAVIGATION FUNCTIONS WITH FORCE DISPLAY
 const showDashboard = () => {
-  console.log("Showing dashboard...")
+  console.log("=== SHOWING DASHBOARD ===")
+
+  // Hide other elements first
   hideElement("loading-screen")
   hideElement("auth-container")
-  showElement("dashboard")
+
+  // Force show dashboard with multiple methods
+  const dashboard = document.getElementById("dashboard")
+  if (dashboard) {
+    // Remove any inline display none
+    dashboard.removeAttribute("style")
+
+    // Set display via multiple methods
+    dashboard.style.display = "block"
+    dashboard.style.visibility = "visible"
+    dashboard.style.opacity = "1"
+
+    // Remove hidden classes
+    dashboard.classList.remove("hidden")
+    dashboard.classList.add("visible")
+
+    console.log("Dashboard element found and styled")
+    console.log("Dashboard display:", dashboard.style.display)
+    console.log("Dashboard computed display:", window.getComputedStyle(dashboard).display)
+    console.log("Dashboard visibility:", dashboard.style.visibility)
+
+    // Force a reflow
+    dashboard.offsetHeight
+
+    // Double check after a small delay
+    setTimeout(() => {
+      console.log("Dashboard check after 100ms:")
+      console.log("Display:", window.getComputedStyle(dashboard).display)
+      console.log("Visibility:", window.getComputedStyle(dashboard).visibility)
+      console.log("Opacity:", window.getComputedStyle(dashboard).opacity)
+    }, 100)
+  } else {
+    console.error("Dashboard element not found!")
+  }
 }
 
 const showAuthContainer = () => {
-  console.log("Showing auth container...")
+  console.log("=== SHOWING AUTH CONTAINER ===")
   hideElement("loading-screen")
   hideElement("dashboard")
-  showElement("auth-container")
+
+  const authContainer = document.getElementById("auth-container")
+  if (authContainer) {
+    authContainer.style.display = "block"
+    authContainer.style.visibility = "visible"
+    console.log("Auth container shown")
+  }
 }
 
 const formatDate = (timestamp) => {
@@ -356,6 +410,12 @@ async function handleAuth(e) {
     if (document.getElementById("confirm-password")) {
       document.getElementById("confirm-password").value = ""
     }
+
+    // Force show dashboard immediately after successful auth
+    setTimeout(() => {
+      console.log("Force showing dashboard after auth success")
+      showDashboard()
+    }, 500)
   } catch (err) {
     console.error("Auth error:", err)
     showError(err.message)
@@ -609,10 +669,11 @@ const loadLeaderboard = () => {
   })
 }
 
-// IMPROVED AUTH STATE LISTENER - THIS IS THE KEY FIX
+// ENHANCED AUTH STATE LISTENER WITH FORCE DISPLAY
 const setupAuthStateListener = () => {
   auth.onAuthStateChanged((user) => {
-    console.log("Auth state changed:", user ? `User: ${user.email}` : "No user")
+    console.log("=== AUTH STATE CHANGED ===")
+    console.log("User:", user ? `${user.email} (${user.uid})` : "No user")
 
     if (user) {
       currentUser = user
@@ -621,28 +682,41 @@ const setupAuthStateListener = () => {
       const userEmailElement = document.getElementById("user-email")
       if (userEmailElement) {
         userEmailElement.textContent = user.email
+        console.log("Updated user email in UI:", user.email)
       }
 
-      // Show dashboard and hide auth
-      showDashboard()
+      // Force show dashboard with delay to ensure DOM is ready
+      setTimeout(() => {
+        console.log("Auth state: Forcing dashboard display")
+        showDashboard()
 
-      // Load user data
-      loadQuestionHistory()
-      loadLeaderboard()
-
-      console.log("Dashboard should now be visible")
+        // Load user data
+        loadQuestionHistory()
+        loadLeaderboard()
+      }, 100)
     } else {
       currentUser = null
+      console.log("Auth state: No user, showing auth container")
       showAuthContainer()
       resetGoogleButton()
-      console.log("Auth container should now be visible")
     }
   })
 }
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM loaded, initializing app...")
+  console.log("=== DOM LOADED - INITIALIZING APP ===")
+
+  // Check if all required elements exist
+  const requiredElements = ["dashboard", "auth-container", "loading-screen"]
+  requiredElements.forEach((id) => {
+    const element = document.getElementById(id)
+    if (element) {
+      console.log(`✓ Found element: ${id}`)
+    } else {
+      console.error(`✗ Missing element: ${id}`)
+    }
+  })
 
   // Tab switching
   document.getElementById("login-tab").addEventListener("click", switchToLogin)
@@ -676,7 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial load with timeout
   setTimeout(() => {
-    console.log("Initial load timeout reached")
+    console.log("=== INITIAL LOAD TIMEOUT ===")
     hideElement("loading-screen")
 
     // Check if user is already authenticated
